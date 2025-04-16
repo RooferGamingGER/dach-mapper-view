@@ -17,9 +17,9 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
 
     console.log("✅ DrawTools aktiv mit Map:", map);
 
-    // Make sure the map is ready by checking if it has been initialized
-    if (!map._loaded) {
-      console.warn("Map is not fully loaded yet. Skipping DrawTools initialization.");
+    // Check if the map container exists in the DOM
+    if (!map.getContainer() || !document.body.contains(map.getContainer())) {
+      console.warn("Map container not found in DOM. Skipping DrawTools initialization.");
       return;
     }
 
@@ -86,13 +86,14 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
 
     // Cleanup bei Unmount
     return () => {
-      if (map && map._loaded) {
-        try {
+      try {
+        // Check if map and its container still exist
+        if (map && map.getContainer() && document.body.contains(map.getContainer())) {
           map.removeLayer(drawnItems);
           map.removeControl(drawControl);
-        } catch (err) {
-          console.error("Error during cleanup:", err);
         }
+      } catch (err) {
+        console.error("Error during cleanup:", err);
       }
     };
   }, [map]);

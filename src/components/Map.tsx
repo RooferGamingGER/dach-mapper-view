@@ -33,13 +33,6 @@ export function Map({ activeTool, mapRef }: MapProps) {
     console.log("Aktives Tool:", activeTool);
   }, [activeTool]);
 
-  // Check if the map is fully loaded
-  useEffect(() => {
-    if (mapRef.current && mapRef.current._loaded) {
-      setMapReady(true);
-    }
-  }, [mapRef.current]);
-
   return (
     <div className="relative w-full h-full flex-1">
       <MapView 
