@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { ZoomIn, ZoomOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MapView from "@/components/MapView";
@@ -12,7 +12,6 @@ interface MapProps {
 
 export function Map({ activeTool, mapRef }: MapProps) {
   const [zoomLevel, setZoomLevel] = useState(8);
-  const [mapReady, setMapReady] = useState(false);
 
   const handleZoomIn = () => {
     if (mapRef.current) {
@@ -34,14 +33,9 @@ export function Map({ activeTool, mapRef }: MapProps) {
 
   return (
     <div className="relative w-full h-full flex-1">
-      <MapView
-        mapRef={mapRef}
-        onMapReady={() => {
-          console.log("🟢 Map ready callback erreicht");
-          setMapReady(true);
-        }}
-      />
+      <MapView mapRef={mapRef} />
 
+      {/* 🔧 Zoom Buttons */}
       <div className="absolute bottom-4 right-4 flex flex-col gap-2 z-[1000]">
         <Button variant="secondary" size="icon" onClick={handleZoomIn}>
           <ZoomIn size={20} />
@@ -51,14 +45,13 @@ export function Map({ activeTool, mapRef }: MapProps) {
         </Button>
       </div>
 
+      {/* 🧭 Anzeigen aktiver Tools */}
       <div className="absolute top-4 right-4 bg-white/90 rounded p-2 text-sm shadow z-[1000]">
-        <strong>Aktives Werkzeug:</strong> {activeTool || "Keins"}
+        <strong>Aktives Werkzeug:</strong> {activeTool || "Standard"}
       </div>
 
-      {/* Nur wenn Map geladen */}
-      {mapReady && mapRef.current && (
-        <DrawTools map={mapRef.current} />
-      )}
+      {/* 🛠️ Zeichentools IMMER anzeigen */}
+      {mapRef.current && <DrawTools map={mapRef.current} />}
     </div>
   );
 }
