@@ -48,13 +48,14 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
 
     // SetTimeout als Fallback bei Control-Zugriffsproblemen
     setTimeout(() => {
-      try {
-        map.addControl(drawControl);
-        console.log("✅ Draw control erfolgreich hinzugefügt.");
-      } catch (error) {
-        console.error("❌ Fehler beim Hinzufügen des drawControl:", error);
-      }
-    }, 0);
+     map.whenReady(() => {
+        try {
+          map.addControl(drawControl);
+          console.log("✅ Draw control erfolgreich hinzugefügt.");
+        } catch (error) {
+          console.error("❌ Fehler beim Hinzufügen des drawControl:", error);
+        }
+      });
 
     map.on(L.Draw.Event.CREATED, (e: L.DrawEvents.Created) => {
       const layer = e.layer;
