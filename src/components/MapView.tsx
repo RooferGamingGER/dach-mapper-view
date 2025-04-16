@@ -11,7 +11,7 @@ const MapView = ({ mapRef }: MapViewProps) => {
       center: [51.5, 7.0],
       zoom: 8,
       minZoom: 6,
-      maxZoom: 21,
+      maxZoom: 22,
       zoomControl: false,
     });
 
