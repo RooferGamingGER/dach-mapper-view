@@ -1,9 +1,9 @@
-import { useEffect, useState, useRef } from "react";
-import { Search, MapPin, X } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Search, X, MapPin } from "lucide-react";
 
-const MAPBOX_TOKEN = "pk.eyJ1Ijoicm9vZmVyZ2FtaW5nIiwiYSI6ImNtOHduem92dTE0dHAya3NldWRuMHVlN2UifQ.p1DH0hDh_k_1fp9HIXoVKQ"; // 👈 HIER deinen echten Token einsetzen
+const MAPBOX_TOKEN = "pk.eyJ1Ijoicm9vZmVyZ2FtaW5nIiwiYSI6ImNtOHduem92dTE0dHAya3NldWRuMHVlN2UifQ.p1DH0hDh_k_1fp9HIXoVKQ"; // ← Bitte ersetzen
 
 interface AddressSearchProps {
   onSelect: (label: string, coords: [number, number]) => void;
@@ -13,47 +13,56 @@ export const AddressSearch = ({ onSelect }: AddressSearchProps) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const searchAddress = async (q: string) => {
+  const handleSearch = async (q: string) => {
     if (q.length < 3) return;
     setLoading(true);
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+      q
+    )}.json?access_token=${MAPBOX_TOKEN}&language=de&limit=5`;
+
     try {
-      const res = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          q
-        )}.json?access_token=${MAPBOX_TOKEN}&limit=5&language=de`
-      );
+      const res = await fetch(url);
       const data = await res.json();
       setResults(data.features);
     } catch (err) {
-      console.error("Adresssuche fehlgeschlagen", err);
+      console.error("Geocoding failed:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    const handler = setTimeout(() => {
-      searchAddress(query);
+    const timer = setTimeout(() => {
+      handleSearch(query);
     }, 300);
-    return () => clearTimeout(handler);
+    return () => clearTimeout(timer);
   }, [query]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setResults([]);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSelect = (item: any) => {
     const [lng, lat] = item.center;
     onSelect(item.place_name, [lng, lat]);
-    setResults([]);
     setQuery(item.place_name);
-  };
-
-  const handleClear = () => {
-    setQuery("");
     setResults([]);
   };
 
   return (
-    <div className="relative w-full max-w-md" ref={containerRef}>
+    <div className="relative w-full" ref={containerRef}>
       <div className="relative">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
@@ -61,29 +70,34 @@ export const AddressSearch = ({ onSelect }: AddressSearchProps) => {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Adresse suchen..."
           className="pl-10 pr-10"
+          ref={inputRef}
         />
         {query && (
           <Button
-            size="icon"
             variant="ghost"
+            size="icon"
             className="absolute right-0 top-0 h-full rounded-l-none"
-            onClick={handleClear}
+            onClick={() => {
+              setQuery("");
+              setResults([]);
+              inputRef.current?.focus();
+            }}
           >
-            <X className="h-4 w-4" />
+            <X className="w-4 h-4" />
           </Button>
         )}
       </div>
 
       {results.length > 0 && (
-        <ul className="absolute mt-2 w-full bg-white border rounded shadow z-50">
-          {results.map((item, i) => (
+        <ul className="absolute mt-2 w-full border bg-white shadow-md rounded z-50">
+          {results.map((result, i) => (
             <li
               key={i}
-              onMouseDown={() => handleSelect(item)}
-              className="p-2 cursor-pointer hover:bg-gray-100 flex items-center text-sm"
+              onMouseDown={() => handleSelect(result)} // ← wichtig!
+              className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
             >
-              <MapPin className="h-4 w-4 mr-2 text-accent" />
-              {item.place_name}
+              <MapPin className="w-4 h-4 mr-2 text-muted-foreground" />
+              {result.place_name}
             </li>
           ))}
         </ul>
