@@ -9,17 +9,20 @@ interface DrawToolsProps {
 
 export const DrawTools = ({ map }: DrawToolsProps) => {
   useEffect(() => {
-    if (!map) {
-      console.warn("🛑 Kein Map-Objekt vorhanden. Zeichentools werden nicht geladen.");
-      return;
-    }
+    setTimeout(() => {
+  // Prüfe, ob Leaflet intern bereit ist
+  if (!map.getContainer || !(map as any)._controlCorners) {
+    console.warn("🛑 map.getContainer oder _controlCorners fehlen noch.");
+    return;
+  }
 
-    map.whenReady(() => {
-      // Kontrolliere ob die internen Leaflet-Corner-Container existieren
-      if (!(map as any)._controlCorners) {
-        console.warn("🛑 map._controlCorners nicht initialisiert, Zeichentools abgebrochen.");
-        return;
-      }
+  try {
+    map.addControl(drawControl);
+    console.log("✅ drawControl erfolgreich hinzugefügt.");
+  } catch (err) {
+    console.error("❌ Fehler beim drawControl.addTo(map):", err);
+  }
+}, 500);
 
       console.log("✅ DrawTools aktiv mit Map:", map);
 
