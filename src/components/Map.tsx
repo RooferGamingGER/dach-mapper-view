@@ -34,7 +34,7 @@ export function Map({ activeTool, mapRef }: MapProps) {
   return (
     <div className="relative w-full h-full flex-1">
       <MapView mapRef={mapRef} />
-      <DrawTools map={mapRef.current} />
+      {mapRef.current && <DrawTools map={mapRef.current} />}
 
       <div className="absolute bottom-4 right-4 flex flex-col gap-2 z-[1000]">
         <Button variant="secondary" size="icon" onClick={handleZoomIn}>
