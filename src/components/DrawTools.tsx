@@ -9,25 +9,30 @@ interface DrawToolsProps {
 
 export const DrawTools = ({ map }: DrawToolsProps) => {
   useEffect(() => {
-    if (!map) {
-      console.warn("🛑 Kein mapRef übergeben.");
-      return;
-    }
+    if (!map) return;
+
+    let retryCount = 0;
+    const MAX_RETRIES = 30;
 
     const tryEnableDrawTools = () => {
       if (!map._controlCorners) {
         console.warn("⏳ map._controlCorners noch nicht verfügbar... erneuter Versuch in 200ms");
+        retryCount++;
+        if (retryCount > MAX_RETRIES) {
+          console.error("❌ DrawTools konnten nicht aktiviert werden – max. Versuche erreicht.");
+          return;
+        }
         setTimeout(tryEnableDrawTools, 200);
         return;
       }
 
-      console.log("✅ DrawTools aktiv auf Karte:", map);
+      console.log("✅ map._controlCorners gefunden – Zeichentools werden geladen...");
 
       const drawnItems = new L.FeatureGroup();
       map.addLayer(drawnItems);
 
-      const drawControl = new (L.Control as any).Draw({
-        position: "topright",
+      const drawControl = new L.Control.Draw({
+        position: "topleft",
         draw: {
           polygon: {
             allowIntersection: false,
@@ -49,14 +54,10 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
       });
 
       try {
-                if (!map._controlCorners) {
-          console.warn("🛠️ map._controlCorners fehlt — initialisiere manuell...");
-          (map as any).initControlPos?.(); // 👉 zur Sicherheit optional aufrufen
-        }
         map.addControl(drawControl);
-        console.log("✅ Zeichentools erfolgreich hinzugefügt.");
+        console.log("✅ Zeichenwerkzeuge hinzugefügt.");
       } catch (error) {
-        console.error("❌ Fehler beim Hinzufügen der Zeichentools:", error);
+        console.error("❌ Fehler beim Hinzufügen des drawControl:", error);
       }
 
       map.on(L.Draw.Event.CREATED, (e: L.DrawEvents.Created) => {
@@ -80,14 +81,16 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
           map.addLayer(label);
         }
       });
-
-      return () => {
-        map.removeLayer(drawnItems);
-        map.removeControl(drawControl);
-      };
     };
 
-    tryEnableDrawTools();
+    map.whenReady(() => {
+      console.log("🔍 Initializing DrawTools...");
+      setTimeout(tryEnableDrawTools, 200); // Erst nach etwas Delay starten
+    });
+
+    return () => {
+      console.log("🧹 Cleanup DrawTools");
+    };
   }, [map]);
 
   return null;
