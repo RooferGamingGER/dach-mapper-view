@@ -32,25 +32,24 @@ export function Map({ activeTool, mapRef }: MapProps) {
   }, [activeTool]);
 
   return (
-    <div className="relative w-full h-full flex-1">
-      <MapView mapRef={mapRef} />
+  <div className="relative w-full h-full flex-1">
+    <MapView mapRef={mapRef} />
 
-      {/* ✅ Zeichenwerkzeuge */}
-      {mapRef.current && <DrawTools map={mapRef.current} />}
-
-      {/* Zoom Buttons */}
-      <div className="absolute bottom-4 right-4 flex flex-col gap-2 z-[1000]">
-        <Button variant="secondary" size="icon" onClick={handleZoomIn}>
-          <ZoomIn size={20} />
-        </Button>
-        <Button variant="secondary" size="icon" onClick={handleZoomOut}>
-          <ZoomOut size={20} />
-        </Button>
-      </div>
-
-      <div className="absolute top-4 right-4 bg-white/90 rounded p-2 text-sm shadow z-[1000]">
-        <strong>Aktives Werkzeug:</strong> {activeTool || "Keins"}
-      </div>
+    <div className="absolute bottom-4 right-4 flex flex-col gap-2 z-[1000]">
+      <Button variant="secondary" size="icon" onClick={handleZoomIn}>
+        <ZoomIn size={20} />
+      </Button>
+      <Button variant="secondary" size="icon" onClick={handleZoomOut}>
+        <ZoomOut size={20} />
+      </Button>
     </div>
-  );
-}
+
+    <div className="absolute top-4 right-4 bg-white/90 rounded p-2 text-sm shadow z-[1000]">
+      <strong>Aktives Werkzeug:</strong> {activeTool || "Keins"}
+    </div>
+
+    {/* ⬇️ Zeichenwerkzeuge hier einbinden */}
+    {mapRef.current && <DrawTools map={mapRef.current} />}
+  </div>
+);
+
