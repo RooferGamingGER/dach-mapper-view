@@ -27,7 +27,7 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
       map.addLayer(drawnItems);
 
       const drawControl = new L.Control.Draw({
-        position: "topleft",
+        position: "topright",
         draw: {
           polygon: {
             allowIntersection: false,
