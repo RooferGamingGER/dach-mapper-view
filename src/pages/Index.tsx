@@ -14,27 +14,32 @@ const Index = () => {
   return (
     <div className="flex flex-col h-screen">
      <Header
-        onAddressSelect={(coords) => {
-          console.log("Zoom zu:", coords);
-          if (mapRef.current) {
-            mapRef.current.flyTo([coords[1], coords[0]], 19, {
-              animate: true,
-              duration: 1.5,
-            });
-      
-            // Nach kurzer Verzögerung: Größe neu berechnen
+          onAddressSelect={(coords) => {
+            console.log("Zoom zu:", coords);
+        
+            // Verzögert, damit DOM sicher gerendert ist
             setTimeout(() => {
-              mapRef.current?.invalidateSize();
-              console.log("Karte wurde neu gezeichnet (invalidateSize)");
-            }, 500);
-      
-            // Optional: Testmarker
-            L.marker([coords[1], coords[0]]).addTo(mapRef.current);
-          } else {
-            console.warn("mapRef.current ist null – Karte noch nicht bereit.");
-          }
-        }}
-      />
+              if (mapRef.current) {
+                mapRef.current.flyTo([coords[1], coords[0]], 19, {
+                  animate: true,
+                  duration: 1.5,
+                });
+        
+                // Nochmals nachzeichnen – doppelt hält besser
+                setTimeout(() => {
+                  mapRef.current?.invalidateSize();
+                  console.log("Karte mit invalidateSize aktualisiert.");
+                }, 800);
+        
+                // Optionaler Marker zum Test
+                L.marker([coords[1], coords[0]]).addTo(mapRef.current);
+              } else {
+                console.warn("mapRef ist nicht verfügbar beim Zoom.");
+              }
+            }, 300); // erste Verzögerung für DOM-Sicherheit
+          }}
+        />
+
       
       <TabBar defaultTabId="measure" onChange={setActiveTab} />
 
