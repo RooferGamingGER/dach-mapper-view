@@ -2,7 +2,6 @@ import { useRef, useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { TabBar } from "@/components/TabBar";
-import { Toolbar } from "@/components/Toolbar";
 import { Map } from "@/components/Map";
 import L from "leaflet";
 
