@@ -16,6 +16,7 @@ const MapView = ({ mapRef }: MapViewProps) => {
     });
 
     mapRef.current = map;
+    console.log("Leaflet Map wurde erstellt und in mapRef gespeichert:", map);
 
     L.tileLayer.wms("https://www.wms.nrw.de/geobasis/wms_nw_dop?", {
       layers: "nw_dop_rgb",
