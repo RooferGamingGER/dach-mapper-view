@@ -43,9 +43,11 @@ export function Map({ activeTool, mapRef }: MapProps) {
       mapRef.current.invalidateSize();
       console.log("✅ Map size invalidated to ensure proper rendering");
       
-      // Set map as ready
-      setMapReady(true);
-      console.log("Map fully initialized, enabling DrawTools immediately");
+      // Set map as ready with a slight delay to ensure DOM is fully ready
+      setTimeout(() => {
+        setMapReady(true);
+        console.log("Map fully initialized, enabling DrawTools immediately");
+      }, 100);
     }
   };
 

@@ -7,10 +7,21 @@ interface DrawToolsProps {
   map: L.Map;
 }
 
+// Type extension to access internal Leaflet properties
+interface LeafletMapExtended extends L.Map {
+  _controlCorners?: {
+    [key: string]: HTMLDivElement;
+  };
+  _controlContainer?: HTMLDivElement;
+}
+
 export function DrawTools({ map }: DrawToolsProps) {
   const [drawControl, setDrawControl] = useState<L.Control.Draw | null>(null);
 
   useEffect(() => {
+    // Cast to extended map to access internal properties
+    const extendedMap = map as LeafletMapExtended;
+
     // Ensure the map is initialized and has control containers ready
     if (!map || !map.getContainer()) {
       console.log("Map not fully initialized yet, will try again...");
@@ -18,29 +29,36 @@ export function DrawTools({ map }: DrawToolsProps) {
     }
 
     // Check if the map's control containers are ready
-    if (!map._controlCorners || !map._controlCorners.topleft) {
+    if (!extendedMap._controlCorners || !extendedMap._controlCorners.topleft) {
       console.log("Map control containers not ready yet, waiting...");
       
-      // Give the map time to fully initialize its DOM elements
-      const timer = setTimeout(() => {
-        console.log("Retrying DrawTools initialization...");
-        
-        // Force map to create control corners if needed
-        map.invalidateSize();
-        
-        // This will trigger a re-render and another attempt
-        setDrawControl(null);
-      }, 500);
+      // Create control containers explicitly if they don't exist
+      const container = map.getContainer();
+      const controlContainer = L.DomUtil.create('div', 'leaflet-control-container', container);
       
-      return () => clearTimeout(timer);
+      // Cast and set internal properties
+      (map as any)._controlContainer = controlContainer;
+      (map as any)._controlCorners = {};
+      
+      const corners = ['topleft', 'topright', 'bottomleft', 'bottomright'];
+      for (let i = 0; i < corners.length; i++) {
+        (map as any)._controlCorners[corners[i]] = L.DomUtil.create(
+          'div',
+          'leaflet-' + corners[i] + ' leaflet-control',
+          controlContainer
+        );
+      }
+      
+      // Force map to refresh
+      map.invalidateSize();
     }
 
     try {
       console.log("🔍 Initializing DrawTools...");
       
-      // Define draw options
-      const drawOptions = {
-        position: 'topleft',
+      // Define draw options with correct ControlPosition type
+      const drawOptions: L.Control.DrawConstructorOptions = {
+        position: 'topleft' as L.ControlPosition,
         draw: {
           polyline: {
             shapeOptions: {

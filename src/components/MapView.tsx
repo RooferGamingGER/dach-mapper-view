@@ -9,6 +9,14 @@ interface MapViewProps {
   onMapReady?: () => void;
 }
 
+// Type extension to access internal Leaflet properties
+interface DrawMap extends L.Map {
+  _controlCorners?: {
+    [key: string]: HTMLDivElement;
+  };
+  _controlContainer?: HTMLDivElement;
+}
+
 const MapView = ({ mapRef, onMapReady }: MapViewProps) => {
   useEffect(() => {
     console.log("MapView initializing...");
@@ -56,15 +64,19 @@ const MapView = ({ mapRef, onMapReady }: MapViewProps) => {
       
       // Create control corners explicitly to avoid the "topleft" undefined error
       // This ensures the DOM elements are created before DrawTools tries to use them
-      if (!map._controlCorners) {
+      const extendedMap = map as DrawMap;
+      
+      if (!extendedMap._controlCorners) {
         const container = map.getContainer();
         const controlContainer = L.DomUtil.create('div', 'leaflet-control-container', container);
-        map._controlContainer = controlContainer;
-        map._controlCorners = {};
+        
+        // Cast and set internal properties
+        (map as any)._controlContainer = controlContainer;
+        (map as any)._controlCorners = {};
         
         const corners = ['topleft', 'topright', 'bottomleft', 'bottomright'];
         for (let i = 0; i < corners.length; i++) {
-          map._controlCorners[corners[i]] = L.DomUtil.create(
+          (map as any)._controlCorners[corners[i]] = L.DomUtil.create(
             'div',
             'leaflet-' + corners[i] + ' leaflet-control',
             controlContainer
