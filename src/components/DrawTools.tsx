@@ -11,20 +11,20 @@ interface DrawToolsProps {
 
 export const DrawTools = ({ map }: DrawToolsProps) => {
   useEffect(() => {
-    if (!map) {
-      console.warn("🛑 mapRef.current ist null – DrawTools wird übersprungen.");
-      return;
-    }
+  if (!map) {
+    console.warn("🛑 mapRef.current ist null – DrawTools wird übersprungen.");
+    return;
+  }
 
-    // Warte bis Leaflet vollständig bereit ist
-    map.whenReady(() => {
+  map.whenReady(() => {
+    setTimeout(() => {
       console.log("✅ DrawTools aktiviert auf Map:", map);
 
       const drawnItems = new L.FeatureGroup();
       map.addLayer(drawnItems);
 
       const drawControl = new L.Control.Draw({
-        position: "topleft", // ⬅️ notwendig für sichtbare UI
+        position: "topleft",
         draw: {
           polygon: {
             allowIntersection: false,
@@ -56,15 +56,12 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
         const layer = e.layer;
         drawnItems.addLayer(layer);
 
-        // Fläche berechnen
         if ("getLatLngs" in layer) {
           const latlngs = (layer as L.Polygon).getLatLngs()[0] as L.LatLng[];
           const area = L.GeometryUtil.geodesicArea(latlngs);
           const readable = `${(area / 1_000_000).toFixed(2)} m²`;
-
           const center = (layer as L.Polygon).getBounds().getCenter();
 
-          // Label als Marker
           const label = L.marker(center, {
             icon: L.divIcon({
               className: "area-label",
@@ -76,14 +73,12 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
         }
       });
 
-      // Cleanup bei Unmount
+      // 🧹 Cleanup
       return () => {
-        console.log("🧹 Entferne DrawTools...");
         map.removeLayer(drawnItems);
         map.removeControl(drawControl);
       };
-    });
-  }, [map]);
+    }, 0); // ← wichtig: Warte, bis DOM intern initialisiert ist
+  });
+}, [map]);
 
-  return null;
-};
