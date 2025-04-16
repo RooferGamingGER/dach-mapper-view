@@ -11,22 +11,6 @@ import L from 'leaflet';
 import 'leaflet-draw';
 import "leaflet-geometryutil";
 
-// Fix Leaflet icon paths for markers (important for proper rendering)
-// @ts-ignore - This is a known fix for Leaflet in bundled environments
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
-
-// Initialize any required Leaflet plugins
-if (L.Control && !L.Control.Draw) {
-  console.error("Leaflet Draw not initialized properly");
-} else {
-  console.log("Leaflet Draw initialized:", !!L.Control?.Draw);
-}
-
 // Log Leaflet version and availability of key components
 console.log("Leaflet version:", L.version);
 console.log("L.Draw available:", !!L.Draw);
