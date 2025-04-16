@@ -5,6 +5,8 @@ import { Footer } from "@/components/Footer";
 import { TabBar } from "@/components/TabBar";
 import { Toolbar } from "@/components/Toolbar";
 import { Map } from "@/components/Map";
+import MapView from "@/components/MapView";
+
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("measure");
