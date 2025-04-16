@@ -7,39 +7,29 @@ interface MapViewProps {
 
 const MapView = ({ mapRef }: MapViewProps) => {
   useEffect(() => {
-    // Initialisiere Leaflet-Karte
     const map = L.map("leaflet-map", {
       center: [51.5, 7.0],
       zoom: 8,
       minZoom: 6,
-      maxZoom: 22, // bis Zoom 19 sind Bilder verfügbar
+      maxZoom: 19,
       zoomControl: true,
     });
 
     mapRef.current = map;
 
-    console.log("Map initialisiert und gespeichert", map);
+    console.log("Leaflet Map wurde erstellt und in mapRef gespeichert:", map);
 
-    // Korrekte WMTS-URL (Achtung: KEIN {x}/{y}/{z}-Format!)
-    const wmtsLayer = L.tileLayer(
-      "https://www.wmts.nrw.de/geobasis/wmts_nw_dop?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0" +
-        "&LAYER=nw_dop_rgb" +
-        "&STYLE=default" +
-        "&TILEMATRIXSET=WebMercatorQuad" +
-        "&TILEMATRIX={z}" +
-        "&TILEROW={y}" +
-        "&TILECOL={x}" +
-        "&FORMAT=image/jpeg",
-      {
-        tileSize: 256,
-        maxZoom: 19,
-        attribution:
-          '© Land NRW (2025) | <a href="https://www.bezreg-koeln.nrw.de" target="_blank">GeoBasis NRW</a>',
-        crossOrigin: true,
-      }
-    );
+    // Digitale Orthophotos NRW (WMS)
+    const wmsLayer = L.tileLayer.wms("https://www.wms.nrw.de/geobasis/wms_nw_dop", {
+      layers: "nw_dop_rgb",
+      format: "image/jpeg",
+      transparent: false,
+      version: "1.3.0",
+      attribution:
+        '© Land NRW (2025) | <a href="https://www.bezreg-koeln.nrw.de" target="_blank">GeoBasis NRW</a>',
+    });
 
-    wmtsLayer.addTo(map);
+    wmsLayer.addTo(map);
 
     return () => {
       map.remove();
