@@ -9,86 +9,88 @@ interface DrawToolsProps {
 
 export const DrawTools = ({ map }: DrawToolsProps) => {
   useEffect(() => {
-    setTimeout(() => {
-  // Prüfe, ob Leaflet intern bereit ist
-  if (!map.getContainer || !(map as any)._controlCorners) {
-    console.warn("🛑 map.getContainer oder _controlCorners fehlen noch.");
-    return;
-  }
+    if (!map) {
+      console.warn("🛑 Kein mapRef übergeben.");
+      return;
+    }
 
-  try {
-    map.addControl(drawControl);
-    console.log("✅ drawControl erfolgreich hinzugefügt.");
-  } catch (err) {
-    console.error("❌ Fehler beim drawControl.addTo(map):", err);
-  }
-}, 500);
+    const container = map.getContainer();
+    if (!container || !document.body.contains(container)) {
+      console.warn("🛑 Map-Container ist (noch) nicht im DOM.");
+      return;
+    }
 
-      console.log("✅ DrawTools aktiv mit Map:", map);
+    // ⏳ Warten auf Leaflet-Initialisierung
+    map.whenReady(() => {
+      // Sicherstellen, dass Leaflet intern bereit ist
+      setTimeout(() => {
+        if (!map._controlCorners) {
+          console.warn("🛑 map._controlCorners nicht initialisiert, Zeichentools abgebrochen.");
+          return;
+        }
 
-      const drawnItems = new L.FeatureGroup();
-      map.addLayer(drawnItems);
+        console.log("✅ Zeichentools initialisiert.");
 
-      const drawControl = new L.Control.Draw({
-        position: "topright",
-        draw: {
-          polygon: {
-            allowIntersection: false,
-            showArea: true,
-            shapeOptions: {
-              color: "#ff0000",
+        const drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+
+        const drawControl = new L.Control.Draw({
+          position: "topleft",
+          draw: {
+            polygon: {
+              allowIntersection: false,
+              showArea: true,
+              shapeOptions: {
+                color: "#ff0000",
+              },
             },
+            marker: false,
+            polyline: false,
+            rectangle: false,
+            circle: false,
+            circlemarker: false,
           },
-          marker: false,
-          polyline: false,
-          rectangle: false,
-          circle: false,
-          circlemarker: false,
-        },
-        edit: {
-          featureGroup: drawnItems,
-          remove: true,
-        },
-      });
+          edit: {
+            featureGroup: drawnItems,
+            remove: true,
+          },
+        });
 
-      try {
         map.addControl(drawControl);
-        console.log("✅ Zeichenwerkzeuge erfolgreich hinzugefügt.");
-      } catch (error) {
-        console.error("❌ Fehler beim Hinzufügen des drawControl:", error);
-      }
+        console.log("✅ Draw Control zur Karte hinzugefügt.");
 
-      map.on(L.Draw.Event.CREATED, (e: L.DrawEvents.Created) => {
-        const layer = e.layer;
-        drawnItems.addLayer(layer);
+        map.on(L.Draw.Event.CREATED, (e: L.DrawEvents.Created) => {
+          const layer = e.layer;
+          drawnItems.addLayer(layer);
 
-        if ("getLatLngs" in layer) {
-          const latlngs = (layer as L.Polygon).getLatLngs()[0] as L.LatLng[];
-          const area = L.GeometryUtil.geodesicArea(latlngs);
-          const readable = `${(area / 1_000_000).toFixed(2)} m²`;
+          if ("getLatLngs" in layer) {
+            const latlngs = (layer as L.Polygon).getLatLngs()[0] as L.LatLng[];
+            const area = L.GeometryUtil.geodesicArea(latlngs);
+            const readable = `${(area / 1_000_000).toFixed(2)} m²`;
 
-          const center = (layer as L.Polygon).getBounds().getCenter();
+            const center = (layer as L.Polygon).getBounds().getCenter();
 
-          const label = L.marker(center, {
-            icon: L.divIcon({
-              className: "area-label",
-              html: `<strong>${readable}</strong>`,
-            }),
-          });
+            const label = L.marker(center, {
+              icon: L.divIcon({
+                className: "area-label",
+                html: `<strong>${readable}</strong>`,
+              }),
+            });
 
-          map.addLayer(label);
-        }
-      });
+            map.addLayer(label);
+          }
+        });
 
-      // Cleanup bei Unmount
-      return () => {
-        try {
-          map.removeLayer(drawnItems);
-          map.removeControl(drawControl);
-        } catch (err) {
-          console.warn("❗ Fehler beim Entfernen von DrawTools:", err);
-        }
-      };
+        // Aufräumen bei Komponentenwechsel
+        return () => {
+          try {
+            map.removeLayer(drawnItems);
+            map.removeControl(drawControl);
+          } catch (err) {
+            console.warn("⚠️ Fehler beim Entfernen der Zeichenwerkzeuge:", err);
+          }
+        };
+      }, 500); // Wartezeit, damit DOM wirklich bereit ist
     });
   }, [map]);
 
