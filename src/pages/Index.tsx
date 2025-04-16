@@ -13,23 +13,29 @@ const Index = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      <Header
-  onAddressSelect={(coords) => {
-    console.log("Zoom zu:", coords);
-    if (mapRef.current) {
-      mapRef.current.flyTo([coords[1], coords[0]], 19, {
-        animate: true,
-        duration: 1.5,
-      });
-
-      // Optional: Marker setzen zum Testen
-      L.marker([coords[1], coords[0]]).addTo(mapRef.current);
-    } else {
-      console.warn("mapRef.current ist null – Karte noch nicht bereit.");
-    }
-  }}
-/>
-
+     <Header
+        onAddressSelect={(coords) => {
+          console.log("Zoom zu:", coords);
+          if (mapRef.current) {
+            mapRef.current.flyTo([coords[1], coords[0]], 19, {
+              animate: true,
+              duration: 1.5,
+            });
+      
+            // Nach kurzer Verzögerung: Größe neu berechnen
+            setTimeout(() => {
+              mapRef.current?.invalidateSize();
+              console.log("Karte wurde neu gezeichnet (invalidateSize)");
+            }, 500);
+      
+            // Optional: Testmarker
+            L.marker([coords[1], coords[0]]).addTo(mapRef.current);
+          } else {
+            console.warn("mapRef.current ist null – Karte noch nicht bereit.");
+          }
+        }}
+      />
+      
       <TabBar defaultTabId="measure" onChange={setActiveTab} />
 
       <main className="flex-1 flex overflow-hidden">
