@@ -11,20 +11,30 @@ const MapView = ({ mapRef }: MapViewProps) => {
       center: [51.5, 7.0],
       zoom: 8,
       minZoom: 6,
-      maxZoom: 22,
+      maxZoom: 21,
       zoomControl: false,
     });
 
     mapRef.current = map;
+
     console.log("Leaflet Map wurde erstellt und in mapRef gespeichert:", map);
 
-    L.tileLayer.wms("https://www.wms.nrw.de/geobasis/wms_nw_dop?", {
-      layers: "nw_dop_rgb",
-      format: "image/jpeg",
-      transparent: false,
-      version: "1.3.0",
-      attribution: "© GeoBasis NRW 2023",
-    }).addTo(map);
+    // --- WMTS-Einbindung für Digitale Orthophotos NRW (Farbe) ---
+    const wmtsUrl = "https://www.wmts.nrw.de/geobasis/wmts_nw_dop";
+
+    const wmtsOptions = {
+      attribution:
+        '© Land NRW (2025) | <a href="https://www.bezreg-koeln.nrw.de/brk_internet/geobasis/web-dienste/geodatendienste/index.html" target="_blank">GeoBasis-DE/LGB NRW</a>',
+      tileSize: 256,
+      maxZoom: 21,
+      noWrap: true,
+    };
+
+    const wmtsLayerUrl = `${wmtsUrl}/nw_dop_rgb/default/WebMercatorQuad/{z}/{y}/{x}.jpeg`;
+
+    const orthofotoLayer = L.tileLayer(wmtsLayerUrl, wmtsOptions);
+
+    orthofotoLayer.addTo(map);
 
     return () => {
       map.remove();
