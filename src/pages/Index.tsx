@@ -47,7 +47,6 @@ const Index = () => {
       <main className="flex-1 flex overflow-hidden">
         {activeTab === "measure" ? (
           <>
-            <Toolbar activeTool={activeTool} onToolSelect={setActiveTool} />
             <Map activeTool={activeTool} mapRef={mapRef} />
           </>
         ) : (
