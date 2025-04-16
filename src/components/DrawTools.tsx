@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import L from "leaflet";
 import "leaflet-draw";
@@ -15,21 +14,18 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
       return;
     }
 
-    console.log("✅ DrawTools aktiv mit Map:", map);
-
-    // Check if the map container exists in the DOM
     if (!map.getContainer() || !document.body.contains(map.getContainer())) {
-      console.warn("Map container not found in DOM. Skipping DrawTools initialization.");
+      console.warn("❌ Map container nicht im DOM gefunden. Abbruch.");
       return;
     }
 
-    // Layer zum Speichern der Zeichnungen
+    console.log("✅ DrawTools aktiv mit Map:", map);
+
     const drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
 
-    // Konfiguration der Zeichenwerkzeuge
     const drawControl = new L.Control.Draw({
-      position: "topleft", // ⬅️ Wichtig!
+      position: "topleft",
       draw: {
         polygon: {
           allowIntersection: false,
@@ -50,31 +46,26 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
       },
     });
 
+    // SetTimeout als Fallback bei Control-Zugriffsproblemen
+    setTimeout(() => {
+      try {
+        map.addControl(drawControl);
+        console.log("✅ Draw control erfolgreich hinzugefügt.");
+      } catch (error) {
+        console.error("❌ Fehler beim Hinzufügen des drawControl:", error);
+      }
+    }, 0);
 
-    // Add draw control to map once it's ready
-    try {
-      map.addControl(drawControl);
-      console.log("✅ Draw control added to map successfully");
-    } catch (error) {
-      console.error("Failed to add draw control to map:", error);
-    }
-
-    // Ereignis: Neues Polygon gezeichnet
     map.on(L.Draw.Event.CREATED, (e: L.DrawEvents.Created) => {
       const layer = e.layer;
-
-      // Polygon hinzufügen
       drawnItems.addLayer(layer);
 
-      // Fläche berechnen
       if ("getLatLngs" in layer) {
         const latlngs = (layer as L.Polygon).getLatLngs()[0] as L.LatLng[];
         const area = L.GeometryUtil.geodesicArea(latlngs);
         const readable = `${(area / 1_000_000).toFixed(2)} m²`;
-
         const center = (layer as L.Polygon).getBounds().getCenter();
 
-        // Textlabel als Marker einfügen
         const label = L.marker(center, {
           icon: L.divIcon({
             className: "area-label",
@@ -86,16 +77,14 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
       }
     });
 
-    // Cleanup bei Unmount
     return () => {
       try {
-        // Check if map and its container still exist
         if (map && map.getContainer() && document.body.contains(map.getContainer())) {
           map.removeLayer(drawnItems);
           map.removeControl(drawControl);
         }
       } catch (err) {
-        console.error("Error during cleanup:", err);
+        console.error("🧹 Fehler beim Entfernen von DrawTools:", err);
       }
     };
   }, [map]);
