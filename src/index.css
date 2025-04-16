@@ -124,10 +124,18 @@
 
 /* Enhanced styling for the draw toolbar to make it more visible */
 .leaflet-draw.leaflet-control {
-  position: relative;
+  position: relative !important;
   z-index: 9999 !important;
-  margin-top: 10px;
-  margin-left: 10px;
+  margin-top: 10px !important;
+  margin-left: 10px !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.leaflet-draw-toolbar {
+  display: block !important;
+  visibility: visible !important;
 }
 
 .leaflet-draw-toolbar a {
@@ -137,6 +145,7 @@
   width: 30px !important;
   height: 30px !important;
   line-height: 30px !important;
+  display: block !important;
 }
 
 .leaflet-draw-toolbar a:hover {
@@ -149,21 +158,43 @@
 
 /* Force leaflet-control elements to be visible */
 .leaflet-control {
-  clear: both;
-  pointer-events: auto;
-  transform: none;
+  clear: both !important;
+  pointer-events: auto !important;
+  transform: none !important;
   z-index: 9999 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 /* Fix for leaflet-container, ensure it has proper stacking context */
 .leaflet-container {
-  z-index: 0;
-  position: relative;
+  z-index: 0 !important;
+  position: relative !important;
 }
 
 /* Make sure controls are on top */
 .leaflet-top,
 .leaflet-bottom {
-  z-index: 1000;
-  position: absolute;
+  z-index: 1000 !important;
+  position: absolute !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Ensure leaflet-control-container is visible */
+.leaflet-control-container {
+  position: absolute !important;
+  z-index: 9999 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Force display of the draw toolbar */
+.leaflet-draw-section {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }

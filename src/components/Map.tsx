@@ -38,14 +38,26 @@ export function Map({ activeTool, mapRef }: MapProps) {
   useEffect(() => {
     if (mapReady && mapRef.current) {
       console.log("Map is ready, preparing DrawTools...");
+      console.log("Map instance exists:", !!mapRef.current);
       
-      // Give map time to fully initialize before adding DrawTools
-      const timer = setTimeout(() => {
-        console.log("Activating DrawTools now");
-        setDrawToolsReady(true);
-      }, 500);
-      
-      return () => clearTimeout(timer);
+      // Verify the DOM is ready for DrawTools
+      if (mapRef.current.getContainer() && document.body.contains(mapRef.current.getContainer())) {
+        console.log("Map container is in DOM, containers found:", 
+          document.querySelectorAll('.leaflet-control-container').length);
+        
+        // Force map to recalculate size
+        mapRef.current.invalidateSize();
+        
+        // Give map time to fully initialize before adding DrawTools
+        const timer = setTimeout(() => {
+          console.log("Activating DrawTools now");
+          setDrawToolsReady(true);
+        }, 1000); // Increased timeout to ensure map is fully initialized
+        
+        return () => clearTimeout(timer);
+      } else {
+        console.warn("Map container is not in DOM yet");
+      }
     }
   }, [mapReady, mapRef]);
 

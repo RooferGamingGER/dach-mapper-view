@@ -17,7 +17,8 @@ const MapView = ({ mapRef, onMapReady }: MapViewProps) => {
     if (!L.Draw) {
       console.error("❌ L.Draw is not available! Check imports.");
     } else {
-      console.log("✅ L.Draw is available");
+      console.log("✅ L.Draw is available:", L.Draw);
+      console.log("L.Control.Draw available:", L.Control.Draw);
     }
     
     // Initialize map with options
@@ -54,12 +55,16 @@ const MapView = ({ mapRef, onMapReady }: MapViewProps) => {
       console.log("✅ Map is fully ready and loaded!");
       map.invalidateSize();
       
-      if (onMapReady) {
-        setTimeout(() => {
+      // Force redraw after a short delay to ensure CSS is applied
+      setTimeout(() => {
+        map.invalidateSize();
+        console.log("✅ Map size invalidated to ensure proper rendering");
+        
+        if (onMapReady) {
           console.log("Executing onMapReady callback");
           onMapReady();
-        }, 200); // Short delay to ensure DOM is rendered
-      }
+        }
+      }, 500);
     });
 
     return () => {
