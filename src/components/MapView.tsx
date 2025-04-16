@@ -11,7 +11,7 @@ const MapView = ({ mapRef }: MapViewProps) => {
       center: [51.5, 7.0],
       zoom: 8,
       minZoom: 6,
-      maxZoom: 18,
+      maxZoom: 24,
       zoomControl: true,
     });
 
@@ -25,7 +25,6 @@ const MapView = ({ mapRef }: MapViewProps) => {
       format: "image/jpeg",
       transparent: false,
       version: "1.3.0",
-      transparent: false,
       maxNativeZoom: 18, // echte Kachel-Zoomstufe
       maxZoom: 24,
       attribution:
