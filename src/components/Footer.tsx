@@ -6,7 +6,7 @@ export function Footer() {
         © 2025 DACH Digital Viewer
       </div>
       <div>
-        powered by geoportal.nrw
+        Drohnenvermessung by RooferGaming®
       </div>
     </footer>
   );
