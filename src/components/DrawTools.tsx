@@ -9,8 +9,12 @@ interface DrawToolsProps {
 
 export const DrawTools = ({ map }: DrawToolsProps) => {
   useEffect(() => {
-    if (!map) return;
-    console.log("📏 DrawTools aktiviert", map);
+  if (!map) {
+    console.warn("🛑 mapRef.current ist noch null – DrawTools überspringt.");
+    return;
+  }
+
+  console.log("✅ DrawTools aktiv mit Map:", map);
     const drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
 
