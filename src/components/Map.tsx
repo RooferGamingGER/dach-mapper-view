@@ -1,5 +1,4 @@
-
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ZoomIn, ZoomOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MapView from "@/components/MapView";
@@ -14,7 +13,6 @@ interface MapProps {
 export function Map({ activeTool, mapRef }: MapProps) {
   const [zoomLevel, setZoomLevel] = useState(8);
   const [mapReady, setMapReady] = useState(false);
-  const [drawToolsReady, setDrawToolsReady] = useState(false);
 
   const handleZoomIn = () => {
     if (mapRef.current) {
@@ -34,39 +32,12 @@ export function Map({ activeTool, mapRef }: MapProps) {
     console.log("Aktives Tool:", activeTool);
   }, [activeTool]);
 
-  // Ensure map is fully ready before enabling DrawTools
-  useEffect(() => {
-    if (mapReady && mapRef.current) {
-      console.log("Map is ready, preparing DrawTools...");
-      console.log("Map instance exists:", !!mapRef.current);
-      
-      // Verify the DOM is ready for DrawTools
-      if (mapRef.current.getContainer() && document.body.contains(mapRef.current.getContainer())) {
-        console.log("Map container is in DOM, containers found:", 
-          document.querySelectorAll('.leaflet-control-container').length);
-        
-        // Force map to recalculate size
-        mapRef.current.invalidateSize();
-        
-        // Give map time to fully initialize before adding DrawTools
-        const timer = setTimeout(() => {
-          console.log("Activating DrawTools now");
-          setDrawToolsReady(true);
-        }, 1000); // Increased timeout to ensure map is fully initialized
-        
-        return () => clearTimeout(timer);
-      } else {
-        console.warn("Map container is not in DOM yet");
-      }
-    }
-  }, [mapReady, mapRef]);
-
   return (
     <div className="relative w-full h-full flex-1">
-      <MapView 
-        mapRef={mapRef} 
+      <MapView
+        mapRef={mapRef}
         onMapReady={() => {
-          console.log("Map is ready - onMapReady triggered");
+          console.log("🟢 Map ready callback erreicht");
           setMapReady(true);
         }}
       />
@@ -84,13 +55,9 @@ export function Map({ activeTool, mapRef }: MapProps) {
         <strong>Aktives Werkzeug:</strong> {activeTool || "Keins"}
       </div>
 
-      {drawToolsReady && mapRef.current && (
-        <>
-          <DrawTools map={mapRef.current} />
-          <div className="absolute top-4 left-20 bg-white/90 rounded p-1 text-xs shadow z-[1000]">
-            DrawTools aktiv
-          </div>
-        </>
+      {/* Nur wenn Map geladen */}
+      {mapReady && mapRef.current && (
+        <DrawTools map={mapRef.current} />
       )}
     </div>
   );
