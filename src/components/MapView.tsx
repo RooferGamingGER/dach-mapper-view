@@ -53,18 +53,11 @@ const MapView = ({ mapRef, onMapReady }: MapViewProps) => {
     // Force rerender and notify when map is ready
     map.whenReady(() => {
       console.log("✅ Map is fully ready and loaded!");
-      map.invalidateSize();
-      
-      // Force redraw after a short delay to ensure CSS is applied
-      setTimeout(() => {
-        map.invalidateSize();
-        console.log("✅ Map size invalidated to ensure proper rendering");
-        
-        if (onMapReady) {
-          console.log("Executing onMapReady callback");
-          onMapReady();
-        }
-      }, 500);
+      map.invalidateSize(); // 🧩 wichtig für ._controlCorners
+    
+      if (onMapReady) {
+        onMapReady();
+      }
     });
 
     return () => {
