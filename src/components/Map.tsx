@@ -3,6 +3,7 @@ import { ZoomIn, ZoomOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MapView from "@/components/MapView";
 import L from "leaflet";
+import { DrawTools } from "@/components/DrawTools";
 
 interface MapProps {
   activeTool?: string;
