@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X, MapPin } from "lucide-react";
 
-const MAPBOX_TOKEN = "pk.eyJ1Ijoicm9vZmVyZ2FtaW5nIiwiYSI6ImNtOHduem92dTE0dHAya3NldWRuMHVlN2UifQ.p1DH0hDh_k_1fp9HIXoVKQ"; // ← Bitte ersetzen
+const MAPBOX_TOKEN = "pk.eyJ1Ijoicm9vZmVyZ2FtaW5nIiwiYSI6ImNtOHduem92dTE0dHAya3NldWRuMHVlN2UifQ.p1DH0hDh_k_1fp9HIXoVKQ";
 
 interface AddressSearchProps {
   onSelect: (label: string, coords: [number, number]) => void;
@@ -62,7 +62,7 @@ export const AddressSearch = ({ onSelect }: AddressSearchProps) => {
   };
 
   return (
-    <div className="relative w-full" ref={containerRef}>
+    <div className="relative w-full z-[1000]" ref={containerRef}>
       <div className="relative">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
@@ -89,11 +89,11 @@ export const AddressSearch = ({ onSelect }: AddressSearchProps) => {
       </div>
 
       {results.length > 0 && (
-        <ul className="absolute mt-2 w-full border bg-white shadow-md rounded z-50">
+        <ul className="absolute mt-2 w-full border bg-white shadow-md rounded-md z-[1000] max-h-60 overflow-auto">
           {results.map((result, i) => (
             <li
               key={i}
-              onMouseDown={() => handleSelect(result)} // ← wichtig!
+              onMouseDown={() => handleSelect(result)}
               className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
             >
               <MapPin className="w-4 h-4 mr-2 text-muted-foreground" />
