@@ -7,35 +7,37 @@ interface MapViewProps {
 
 const MapView = ({ mapRef }: MapViewProps) => {
   useEffect(() => {
+    // Leaflet-Karte initialisieren
     const map = L.map("leaflet-map", {
       center: [51.5, 7.0],
       zoom: 8,
       minZoom: 6,
-      maxZoom: 22,
+      maxZoom: 21,
       zoomControl: false,
     });
 
+    // Referenz speichern
     mapRef.current = map;
 
     console.log("Leaflet Map wurde erstellt und in mapRef gespeichert:", map);
 
-    // --- WMTS-Einbindung für Digitale Orthophotos NRW (Farbe) ---
-    const wmtsUrl = "https://www.wmts.nrw.de/geobasis/wmts_nw_dop";
+    // WMTS-Konfiguration für Geoportal NRW (Digitale Orthophotos RGB)
+    const wmtsUrl =
+      "https://www.wmts.nrw.de/geobasis/wmts_nw_dop/nw_dop_rgb/default/WebMercatorQuad/{z}/{y}/{x}.jpeg";
 
     const wmtsOptions = {
-      attribution:
-        '© Land NRW (2025) | <a href="https://www.bezreg-koeln.nrw.de/brk_internet/geobasis/web-dienste/geodatendienste/index.html" target="_blank">GeoBasis-DE/LGB NRW</a>',
       tileSize: 256,
-      maxZoom: 21,
-      noWrap: true,
+      maxZoom: 22,
+      attribution:
+        '© Land NRW (2025) | <a href="https://www.bezreg-koeln.nrw.de" target="_blank">GeoBasis NRW</a>',
+      crossOrigin: true,
     };
 
-    const wmtsLayerUrl = `${wmtsUrl}/nw_dop_rgb/default/WebMercatorQuad/{z}/{y}/{x}.jpeg`;
-
-    const orthofotoLayer = L.tileLayer(wmtsLayerUrl, wmtsOptions);
-
+    // Orthofoto-Layer hinzufügen
+    const orthofotoLayer = L.tileLayer(wmtsUrl, wmtsOptions);
     orthofotoLayer.addTo(map);
 
+    // Cleanup
     return () => {
       map.remove();
     };
