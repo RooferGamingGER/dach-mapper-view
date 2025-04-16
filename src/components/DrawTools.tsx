@@ -29,6 +29,7 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
 
     // Konfiguration der Zeichenwerkzeuge
     const drawControl = new L.Control.Draw({
+      position: "topleft", // ⬅️ Wichtig!
       draw: {
         polygon: {
           allowIntersection: false,
@@ -48,6 +49,7 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
         remove: true,
       },
     });
+
 
     // Add draw control to map once it's ready
     try {
