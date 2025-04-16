@@ -27,7 +27,7 @@ const MapView = ({ mapRef, onMapReady }: MapViewProps) => {
       zoom: 8,
       minZoom: 6,
       maxZoom: 22,
-      zoomControl: true,
+      zoomControl: false, // We'll add our own zoom controls
     });
 
     // Store map reference
@@ -53,9 +53,31 @@ const MapView = ({ mapRef, onMapReady }: MapViewProps) => {
     // Force rerender and notify when map is ready
     map.whenReady(() => {
       console.log("✅ Map is fully ready and loaded!");
-      map.invalidateSize(); // 🧩 wichtig für ._controlCorners
-    
+      
+      // Create control corners explicitly to avoid the "topleft" undefined error
+      // This ensures the DOM elements are created before DrawTools tries to use them
+      if (!map._controlCorners) {
+        const container = map.getContainer();
+        const controlContainer = L.DomUtil.create('div', 'leaflet-control-container', container);
+        map._controlContainer = controlContainer;
+        map._controlCorners = {};
+        
+        const corners = ['topleft', 'topright', 'bottomleft', 'bottomright'];
+        for (let i = 0; i < corners.length; i++) {
+          map._controlCorners[corners[i]] = L.DomUtil.create(
+            'div',
+            'leaflet-' + corners[i] + ' leaflet-control',
+            controlContainer
+          );
+        }
+      }
+      
+      // Make sure size calculations are correct
+      map.invalidateSize();
+      
+      // Call the onMapReady callback if provided
       if (onMapReady) {
+        console.log("Executing onMapReady callback");
         onMapReady();
       }
     });

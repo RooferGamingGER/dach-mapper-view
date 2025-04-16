@@ -1,57 +1,114 @@
-import { useRef, useEffect, useState } from "react";
-import { ZoomIn, ZoomOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import MapView from "@/components/MapView";
-import { DrawTools } from "@/components/DrawTools";
-import L from "leaflet";
 
-interface MapProps {
-  activeTool?: string;
-  mapRef: React.MutableRefObject<L.Map | null>;
+import { useEffect, useState } from "react";
+import L from "leaflet";
+import "leaflet-draw";
+
+interface DrawToolsProps {
+  map: L.Map;
 }
 
-export function Map({ activeTool, mapRef }: MapProps) {
-  const [zoomLevel, setZoomLevel] = useState(8);
-
-  const handleZoomIn = () => {
-    if (mapRef.current) {
-      mapRef.current.zoomIn();
-      setZoomLevel(mapRef.current.getZoom());
-    }
-  };
-
-  const handleZoomOut = () => {
-    if (mapRef.current) {
-      mapRef.current.zoomOut();
-      setZoomLevel(mapRef.current.getZoom());
-    }
-  };
+export function DrawTools({ map }: DrawToolsProps) {
+  const [drawControl, setDrawControl] = useState<L.Control.Draw | null>(null);
 
   useEffect(() => {
-    console.log("Aktives Tool:", activeTool);
-  }, [activeTool]);
+    // Ensure the map is initialized and has control containers ready
+    if (!map || !map.getContainer()) {
+      console.log("Map not fully initialized yet, will try again...");
+      return;
+    }
 
-  return (
-    <div className="relative w-full h-full flex-1">
-      <MapView mapRef={mapRef} />
+    // Check if the map's control containers are ready
+    if (!map._controlCorners || !map._controlCorners.topleft) {
+      console.log("Map control containers not ready yet, waiting...");
+      
+      // Give the map time to fully initialize its DOM elements
+      const timer = setTimeout(() => {
+        console.log("Retrying DrawTools initialization...");
+        
+        // Force map to create control corners if needed
+        map.invalidateSize();
+        
+        // This will trigger a re-render and another attempt
+        setDrawControl(null);
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
 
-      {/* 🔧 Zoom Buttons */}
-      <div className="absolute bottom-4 right-4 flex flex-col gap-2 z-[1000]">
-        <Button variant="secondary" size="icon" onClick={handleZoomIn}>
-          <ZoomIn size={20} />
-        </Button>
-        <Button variant="secondary" size="icon" onClick={handleZoomOut}>
-          <ZoomOut size={20} />
-        </Button>
-      </div>
+    try {
+      console.log("🔍 Initializing DrawTools...");
+      
+      // Define draw options
+      const drawOptions = {
+        position: 'topleft',
+        draw: {
+          polyline: {
+            shapeOptions: {
+              color: '#f357a1',
+              weight: 5
+            }
+          },
+          polygon: {
+            allowIntersection: false,
+            drawError: {
+              color: '#e1e100',
+              message: '<strong>Fehler:</strong> Polygone dürfen sich nicht überschneiden!'
+            },
+            shapeOptions: {
+              color: '#3388ff',
+              weight: 3
+            }
+          },
+          circle: false,
+          rectangle: {
+            shapeOptions: {
+              color: '#3388ff',
+              weight: 3
+            }
+          },
+          marker: true
+        }
+      };
 
-      {/* 🧭 Anzeigen aktiver Tools */}
-      <div className="absolute top-4 right-4 bg-white/90 rounded p-2 text-sm shadow z-[1000]">
-        <strong>Aktives Werkzeug:</strong> {activeTool || "Standard"}
-      </div>
+      // Create and add draw control to map
+      const control = new L.Control.Draw(drawOptions);
+      control.addTo(map);
+      setDrawControl(control);
+      
+      console.log("✅ DrawControl added successfully!");
 
-      {/* 🛠️ Zeichentools IMMER anzeigen */}
-      {mapRef.current && <DrawTools map={mapRef.current} />}
-    </div>
-  );
+      // Setup event listeners for when shapes are created
+      map.on(L.Draw.Event.CREATED, (event: any) => {
+        const layer = event.layer;
+        
+        // Add the new layer to the map
+        layer.addTo(map);
+        
+        // Display area measurement for polygons and rectangles
+        if (event.layerType === 'polygon' || event.layerType === 'rectangle') {
+          const area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
+          const readableArea = area < 10000 
+            ? `${Math.round(area)}m²` 
+            : `${Math.round(area / 10000 * 100) / 100}ha`;
+          
+          layer.bindTooltip(readableArea, {
+            permanent: true,
+            direction: 'center',
+            className: 'area-label'
+          }).openTooltip();
+        }
+      });
+
+      return () => {
+        // Clean up by removing control when component unmounts
+        if (control && map) {
+          map.removeControl(control);
+        }
+      };
+    } catch (error) {
+      console.error("❌ Error adding drawControl:", error);
+    }
+  }, [map]);
+
+  return null; // This component doesn't render anything visible
 }
