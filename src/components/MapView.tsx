@@ -1,31 +1,22 @@
-'use client';
-
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 
-// Koordinatenbereich von NRW (SW / NE)
-const NRW_BOUNDS: L.LatLngBoundsLiteral = [
-  [50.2, 5.8],
-  [52.6, 9.5],
-];
+interface MapViewProps {
+  mapRef: React.MutableRefObject<L.Map | null>;
+}
 
-const MapView = () => {
-  const mapRef = useRef<HTMLDivElement>(null);
-
+const MapView = ({ mapRef }: MapViewProps) => {
   useEffect(() => {
-    if (!mapRef.current) return;
-
-    const map = L.map(mapRef.current, {
-      center: [51.5, 7.0], // NRW Mitte
+    const map = L.map('leaflet-map', {
+      center: [51.5, 7.0],
       zoom: 8,
-      minZoom: 6,
       maxZoom: 22,
-      maxBounds: NRW_BOUNDS,
+      minZoom: 6,
       zoomControl: false,
     });
 
-    // WMS Layer – Orthofoto NRW
+    mapRef.current = map;
+
     L.tileLayer.wms('https://www.wms.nrw.de/geobasis/wms_nw_dop?', {
       layers: 'nw_dop_rgb',
       format: 'image/jpeg',
@@ -34,21 +25,12 @@ const MapView = () => {
       attribution: '© GeoBasis NRW 2023',
     }).addTo(map);
 
-    // Optional: Zoom-In/Out Buttons rechts unten
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
-
     return () => {
       map.remove();
     };
-  }, []);
+  }, [mapRef]);
 
-  return (
-    <div
-      ref={mapRef}
-      id="leaflet-map"
-      style={{ width: '100%', height: '100%' }}
-    />
-  );
+  return <div id="leaflet-map" className="w-full h-full z-0" />;
 };
 
 export default MapView;
