@@ -20,7 +20,8 @@ const Index = () => {
             // Verzögert, damit DOM sicher gerendert ist
             setTimeout(() => {
               if (mapRef.current) {
-                mapRef.current.flyTo([coords[1], coords[0]], 19, {
+                const ZOOM_LEVEL = 17;
+                mapRef.current.flyTo([coords[1], coords[0]], ZOOM_LEVEL, {
                   animate: true,
                   duration: 1.5,
                 });
