@@ -1,31 +1,33 @@
-
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { TabBar } from "@/components/TabBar";
 import { Toolbar } from "@/components/Toolbar";
 import { Map } from "@/components/Map";
-import MapView from "@/components/MapView";
-
+import L from "leaflet";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("measure");
   const [activeTool, setActiveTool] = useState("");
-  
+  const mapRef = useRef<L.Map | null>(null); // zentraler Zugriff auf die Karte
+
   return (
     <div className="flex flex-col h-screen">
-      <Header />
-      
+      <Header
+        onAddressSelect={(coords) => {
+          if (mapRef.current) {
+            mapRef.current.setView([coords[1], coords[0]], 19); // lng/lat → lat/lng
+          }
+        }}
+      />
+
       <TabBar defaultTabId="measure" onChange={setActiveTab} />
-      
+
       <main className="flex-1 flex overflow-hidden">
         {activeTab === "measure" ? (
           <>
-            {/* Toolbar sidebar */}
             <Toolbar activeTool={activeTool} onToolSelect={setActiveTool} />
-            
-            {/* Map area */}
-            <Map activeTool={activeTool} />
+            <Map activeTool={activeTool} mapRef={mapRef} />
           </>
         ) : (
           <div className="flex-1 p-6">
@@ -36,7 +38,7 @@ const Index = () => {
           </div>
         )}
       </main>
-      
+
       <Footer />
     </div>
   );
