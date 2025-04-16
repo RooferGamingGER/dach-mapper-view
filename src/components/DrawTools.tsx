@@ -1,97 +1,57 @@
-import { useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
+import { ZoomIn, ZoomOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import MapView from "@/components/MapView";
+import { DrawTools } from "@/components/DrawTools";
 import L from "leaflet";
-import "leaflet-draw";
-import "leaflet-geometryutil";
 
-interface DrawToolsProps {
-  map: L.Map | null;
+interface MapProps {
+  activeTool?: string;
+  mapRef: React.MutableRefObject<L.Map | null>;
 }
 
-export const DrawTools = ({ map }: DrawToolsProps) => {
+export function Map({ activeTool, mapRef }: MapProps) {
+  const [zoomLevel, setZoomLevel] = useState(8);
+
+  const handleZoomIn = () => {
+    if (mapRef.current) {
+      mapRef.current.zoomIn();
+      setZoomLevel(mapRef.current.getZoom());
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (mapRef.current) {
+      mapRef.current.zoomOut();
+      setZoomLevel(mapRef.current.getZoom());
+    }
+  };
+
   useEffect(() => {
-    if (!map) return;
+    console.log("Aktives Tool:", activeTool);
+  }, [activeTool]);
 
-    let retryCount = 0;
-    const MAX_RETRIES = 30;
+  return (
+    <div className="relative w-full h-full flex-1">
+      <MapView mapRef={mapRef} />
 
-    const tryEnableDrawTools = () => {
-      if (!map._controlCorners) {
-        console.warn("⏳ map._controlCorners noch nicht verfügbar... erneuter Versuch in 200ms");
-        retryCount++;
-        if (retryCount > MAX_RETRIES) {
-          console.error("❌ DrawTools konnten nicht aktiviert werden – max. Versuche erreicht.");
-          return;
-        }
-        setTimeout(tryEnableDrawTools, 200);
-        return;
-      }
+      {/* 🔧 Zoom Buttons */}
+      <div className="absolute bottom-4 right-4 flex flex-col gap-2 z-[1000]">
+        <Button variant="secondary" size="icon" onClick={handleZoomIn}>
+          <ZoomIn size={20} />
+        </Button>
+        <Button variant="secondary" size="icon" onClick={handleZoomOut}>
+          <ZoomOut size={20} />
+        </Button>
+      </div>
 
-      console.log("✅ map._controlCorners gefunden – Zeichentools werden geladen...");
+      {/* 🧭 Anzeigen aktiver Tools */}
+      <div className="absolute top-4 right-4 bg-white/90 rounded p-2 text-sm shadow z-[1000]">
+        <strong>Aktives Werkzeug:</strong> {activeTool || "Standard"}
+      </div>
 
-      const drawnItems = new L.FeatureGroup();
-      map.addLayer(drawnItems);
-
-      const drawControl = new L.Control.Draw({
-        position: "topleft",
-        draw: {
-          polygon: {
-            allowIntersection: false,
-            showArea: true,
-            shapeOptions: {
-              color: "#ff0000",
-            },
-          },
-          marker: false,
-          polyline: false,
-          rectangle: false,
-          circle: false,
-          circlemarker: false,
-        },
-        edit: {
-          featureGroup: drawnItems,
-          remove: true,
-        },
-      });
-
-      try {
-        map.addControl(drawControl);
-        console.log("✅ Zeichenwerkzeuge hinzugefügt.");
-      } catch (error) {
-        console.error("❌ Fehler beim Hinzufügen des drawControl:", error);
-      }
-
-      map.on(L.Draw.Event.CREATED, (e: L.DrawEvents.Created) => {
-        const layer = e.layer;
-        drawnItems.addLayer(layer);
-
-        if ("getLatLngs" in layer) {
-          const latlngs = (layer as L.Polygon).getLatLngs()[0] as L.LatLng[];
-          const area = L.GeometryUtil.geodesicArea(latlngs);
-          const readable = `${(area / 1_000_000).toFixed(2)} m²`;
-
-          const center = (layer as L.Polygon).getBounds().getCenter();
-
-          const label = L.marker(center, {
-            icon: L.divIcon({
-              className: "area-label",
-              html: `<strong>${readable}</strong>`,
-            }),
-          });
-
-          map.addLayer(label);
-        }
-      });
-    };
-
-    map.whenReady(() => {
-      console.log("🔍 Initializing DrawTools...");
-      setTimeout(tryEnableDrawTools, 200); // Erst nach etwas Delay starten
-    });
-
-    return () => {
-      console.log("🧹 Cleanup DrawTools");
-    };
-  }, [map]);
-
-  return null;
-};
+      {/* 🛠️ Zeichentools IMMER anzeigen */}
+      {mapRef.current && <DrawTools map={mapRef.current} />}
+    </div>
+  );
+}
