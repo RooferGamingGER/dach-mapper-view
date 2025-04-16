@@ -9,15 +9,18 @@ interface DrawToolsProps {
 
 export const DrawTools = ({ map }: DrawToolsProps) => {
   useEffect(() => {
-  if (!map) {
-    console.warn("🛑 mapRef.current ist noch null – DrawTools überspringt.");
-    return;
-  }
+    if (!map) {
+      console.warn("🛑 mapRef.current ist noch null – DrawTools überspringt.");
+      return;
+    }
 
-  console.log("✅ DrawTools aktiv mit Map:", map);
+    console.log("✅ DrawTools aktiv mit Map:", map);
+
+    // Layer zum Speichern der Zeichnungen
     const drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
 
+    // Konfiguration der Zeichenwerkzeuge
     const drawControl = new L.Control.Draw({
       draw: {
         polygon: {
@@ -39,27 +42,41 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
       },
     });
 
+    // Steuerung zur Karte hinzufügen
     map.addControl(drawControl);
 
-    map.on(L.Draw.Event.CREATED, (e: any) => {
+    // Ereignis: Neues Polygon gezeichnet
+    map.on(L.Draw.Event.CREATED, (e: L.DrawEvents.Created) => {
       const layer = e.layer;
+
+      // Polygon hinzufügen
       drawnItems.addLayer(layer);
 
-      const latlngs = layer.getLatLngs()[0];
-      const area = L.GeometryUtil.geodesicArea(latlngs);
-      const readable = `${(area / 1_000_000).toFixed(2)} m²`;
+      // Fläche berechnen
+      if ("getLatLngs" in layer) {
+        const latlngs = (layer as L.Polygon).getLatLngs()[0] as L.LatLng[];
+        const area = L.GeometryUtil.geodesicArea(latlngs);
+        const readable = `${(area / 1_000_000).toFixed(2)} m²`;
 
-      const center = layer.getBounds().getCenter();
+        const center = (layer as L.Polygon).getBounds().getCenter();
 
-      const label = L.marker(center, {
-        icon: L.divIcon({
-          className: "leaflet-tooltip",
-          html: `<strong>${readable}</strong>`,
-        }),
-      });
+        // Textlabel als Marker einfügen
+        const label = L.marker(center, {
+          icon: L.divIcon({
+            className: "area-label",
+            html: `<strong>${readable}</strong>`,
+          }),
+        });
 
-      map.addLayer(label);
+        map.addLayer(label);
+      }
     });
+
+    // Cleanup bei Unmount
+    return () => {
+      map.removeLayer(drawnItems);
+      map.removeControl(drawControl);
+    };
   }, [map]);
 
   return null;
