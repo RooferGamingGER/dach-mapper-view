@@ -4,6 +4,9 @@ import { Footer } from "@/components/Footer";
 import { TabBar } from "@/components/TabBar";
 import { Map } from "@/components/Map";
 import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import "leaflet-draw/dist/leaflet.draw.css"; // ← ✅ Muss da stehen, damit Controls gerendert werden
+
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("measure");
