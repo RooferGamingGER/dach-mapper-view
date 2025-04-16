@@ -5,7 +5,8 @@ import './index.css'
 import './leaflet.css'
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css"; // Ensure Leaflet Draw CSS is imported
-import "leaflet-geometryutil/dist/leaflet-geometryutil.js";
+// Import leaflet-geometryutil as a module instead of direct file path
+import "leaflet-geometryutil";
 
 createRoot(document.getElementById("root")!).render(<App />);
 
