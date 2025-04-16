@@ -84,7 +84,8 @@ export function DrawTools({ map }: DrawToolsProps) {
               weight: 3
             }
           },
-          marker: true
+          // Fix: Change 'true' to an empty object for marker options
+          marker: {} // This is the fix for the TypeScript error
         }
       };
 
