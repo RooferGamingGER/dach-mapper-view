@@ -15,9 +15,14 @@ const Index = () => {
     <div className="flex flex-col h-screen">
       <Header
         onAddressSelect={(coords) => {
-          if (mapRef.current) {
-            mapRef.current.setView([coords[1], coords[0]], 19); // lng/lat → lat/lng
-          }
+          setTimeout(() => {
+            if (mapRef.current) {
+              console.log("Zoom zu:", coords);
+              mapRef.current.setView([coords[1], coords[0]], 19);
+            } else {
+              console.warn("MapRef war noch nicht bereit.");
+            }
+          }, 300); // 300ms warten
         }}
       />
 
