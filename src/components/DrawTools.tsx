@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import L from "leaflet";
 import "leaflet-draw";
@@ -15,6 +16,12 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
     }
 
     console.log("✅ DrawTools aktiv mit Map:", map);
+
+    // Make sure the map is ready by checking if it has been initialized
+    if (!map._loaded) {
+      console.warn("Map is not fully loaded yet. Skipping DrawTools initialization.");
+      return;
+    }
 
     // Layer zum Speichern der Zeichnungen
     const drawnItems = new L.FeatureGroup();
@@ -42,8 +49,13 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
       },
     });
 
-    // Steuerung zur Karte hinzufügen
-    map.addControl(drawControl);
+    // Add draw control to map once it's ready
+    try {
+      map.addControl(drawControl);
+      console.log("✅ Draw control added to map successfully");
+    } catch (error) {
+      console.error("Failed to add draw control to map:", error);
+    }
 
     // Ereignis: Neues Polygon gezeichnet
     map.on(L.Draw.Event.CREATED, (e: L.DrawEvents.Created) => {
@@ -74,8 +86,14 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
 
     // Cleanup bei Unmount
     return () => {
-      map.removeLayer(drawnItems);
-      map.removeControl(drawControl);
+      if (map && map._loaded) {
+        try {
+          map.removeLayer(drawnItems);
+          map.removeControl(drawControl);
+        } catch (err) {
+          console.error("Error during cleanup:", err);
+        }
+      }
     };
   }, [map]);
 

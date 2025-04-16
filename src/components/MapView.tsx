@@ -1,11 +1,13 @@
+
 import { useEffect } from "react";
 import L from "leaflet";
 
 interface MapViewProps {
   mapRef: React.MutableRefObject<L.Map | null>;
+  onMapReady?: () => void;
 }
 
-const MapView = ({ mapRef }: MapViewProps) => {
+const MapView = ({ mapRef, onMapReady }: MapViewProps) => {
   useEffect(() => {
     const map = L.map("leaflet-map", {
       center: [51.5, 7.0],
@@ -32,10 +34,18 @@ const MapView = ({ mapRef }: MapViewProps) => {
 
     satelliteLayer.addTo(map);
 
+    // Notify when map is ready
+    map.whenReady(() => {
+      console.log("Map is ready and loaded!");
+      if (onMapReady) {
+        onMapReady();
+      }
+    });
+
     return () => {
       map.remove();
     };
-  }, [mapRef]);
+  }, [mapRef, onMapReady]);
 
   return <div id="leaflet-map" className="w-full h-full" />;
 };
