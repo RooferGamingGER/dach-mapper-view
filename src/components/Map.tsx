@@ -34,30 +34,52 @@ export function Map({ activeTool, mapRef }: MapProps) {
     console.log("Aktives Tool:", activeTool);
   }, [activeTool]);
 
-  // Ensure map is fully ready before enabling DrawTools
+  // Enhanced map readiness checking
   useEffect(() => {
     if (mapReady && mapRef.current) {
       console.log("Map is ready, preparing DrawTools...");
-      console.log("Map instance exists:", !!mapRef.current);
       
-      // Verify the DOM is ready for DrawTools
-      if (mapRef.current.getContainer() && document.body.contains(mapRef.current.getContainer())) {
-        console.log("Map container is in DOM, containers found:", 
-          document.querySelectorAll('.leaflet-control-container').length);
+      // Function to check if the map container is properly initialized
+      const checkMapContainer = () => {
+        if (!mapRef.current) return false;
         
-        // Force map to recalculate size
-        mapRef.current.invalidateSize();
+        const container = mapRef.current.getContainer();
+        if (!container || !document.body.contains(container)) {
+          console.log("Map container not in DOM yet");
+          return false;
+        }
         
-        // Give map time to fully initialize before adding DrawTools
+        // Check for essential Leaflet elements
+        const controlContainer = container.querySelector('.leaflet-control-container');
+        if (!controlContainer) {
+          console.log("Control container not found yet");
+          return false;
+        }
+        
+        return true;
+      };
+      
+      // Check if map is fully ready, if not, retry
+      if (!checkMapContainer()) {
+        console.log("Map not fully initialized, waiting...");
+        
+        // Wait longer for full initialization
         const timer = setTimeout(() => {
-          console.log("Activating DrawTools now");
-          setDrawToolsReady(true);
-        }, 1000); // Increased timeout to ensure map is fully initialized
+          if (checkMapContainer()) {
+            console.log("Map container now ready, enabling DrawTools");
+            setDrawToolsReady(true);
+          } else {
+            console.log("Still waiting for map initialization...");
+            // One final attempt after another delay
+            setTimeout(() => setDrawToolsReady(true), 2000);
+          }
+        }, 2000);
         
         return () => clearTimeout(timer);
-      } else {
-        console.warn("Map container is not in DOM yet");
       }
+      
+      console.log("Map fully initialized, enabling DrawTools immediately");
+      setDrawToolsReady(true);
     }
   }, [mapReady, mapRef]);
 
