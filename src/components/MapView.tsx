@@ -11,27 +11,26 @@ const MapView = ({ mapRef }: MapViewProps) => {
       center: [51.5, 7.0],
       zoom: 8,
       minZoom: 6,
-      maxZoom: 24,
+      maxZoom: 22,
       zoomControl: true,
     });
 
     mapRef.current = map;
 
-    console.log("Leaflet Map wurde erstellt und in mapRef gespeichert:", map);
+    const MAPBOX_TOKEN = "pk.eyJ1Ijoicm9vZmVyZ2FtaW5nIiwiYSI6ImNtOHduem92dTE0dHAya3NldWRuMHVlN2UifQ.p1DH0hDh_k_1fp9HIXoVKQ";
 
-    // Digitale Orthophotos NRW (WMS)
-    const wmsLayer = L.tileLayer.wms("https://www.wms.nrw.de/geobasis/wms_nw_dop", {
-      layers: "nw_dop_rgb",
-      format: "image/jpeg",
-      transparent: false,
-      version: "1.3.0",
-      maxNativeZoom: 18, // echte Kachel-Zoomstufe
-      maxZoom: 24,
-      attribution:
-        '© Land NRW (2025) | <a href="https://www.bezreg-koeln.nrw.de" target="_blank">GeoBasis NRW</a>',
-    });
+    const satelliteLayer = L.tileLayer(
+      `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/{z}/{x}/{y}?access_token=${MAPBOX_TOKEN}`,
+      {
+        tileSize: 512,
+        zoomOffset: -1,
+        maxZoom: 22,
+        attribution:
+          '© <a href="https://www.mapbox.com/">Mapbox</a> © <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
+      }
+    );
 
-    wmsLayer.addTo(map);
+    satelliteLayer.addTo(map);
 
     return () => {
       map.remove();
