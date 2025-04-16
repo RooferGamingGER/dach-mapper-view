@@ -1,4 +1,12 @@
-export function Header() {
+import { Button } from "@/components/ui/button";
+import { Home, Save, Download } from "lucide-react";
+import { AddressSearch } from "@/components/AddressSearch";
+
+interface HeaderProps {
+  onAddressSelect: (coords: [number, number]) => void;
+}
+
+export function Header({ onAddressSelect }: HeaderProps) {
   return (
     <header className="flex items-center justify-between px-4 py-2 bg-white border-b">
       <div className="flex items-center gap-3">
@@ -11,8 +19,8 @@ export function Header() {
       <div className="flex-1 max-w-xl mx-4">
         <AddressSearch
           onSelect={(label, coords) => {
-            console.log("Ausgewählte Adresse:", label, coords);
-            // → Im nächsten Schritt: Karte dorthin zoomen
+            console.log("Adresse:", label);
+            onAddressSelect(coords); // Zoom anstoßen
           }}
         />
       </div>
