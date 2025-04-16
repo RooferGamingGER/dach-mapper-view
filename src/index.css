@@ -122,22 +122,48 @@
   white-space: nowrap;
 }
 
-/* Add styling for the draw toolbar to make it more visible */
+/* Enhanced styling for the draw toolbar to make it more visible */
+.leaflet-draw.leaflet-control {
+  position: relative;
+  z-index: 9999 !important;
+  margin-top: 10px;
+  margin-left: 10px;
+}
+
 .leaflet-draw-toolbar a {
-  background-color: white;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  background-color: white !important;
+  border: 2px solid rgba(0, 0, 0, 0.3) !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3) !important;
+  width: 30px !important;
+  height: 30px !important;
+  line-height: 30px !important;
 }
 
 .leaflet-draw-toolbar a:hover {
-  background-color: #f4f4f4;
+  background-color: #f8f8f8 !important;
 }
 
 .leaflet-draw-draw-polygon {
   background-position: -2px -2px !important;
 }
 
-.leaflet-draw.leaflet-control {
-  margin-top: 10px;
-  margin-left: 10px;
+/* Force leaflet-control elements to be visible */
+.leaflet-control {
+  clear: both;
+  pointer-events: auto;
+  transform: none;
+  z-index: 9999 !important;
+}
+
+/* Fix for leaflet-container, ensure it has proper stacking context */
+.leaflet-container {
+  z-index: 0;
+  position: relative;
+}
+
+/* Make sure controls are on top */
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 1000;
+  position: absolute;
 }

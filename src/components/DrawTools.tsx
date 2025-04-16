@@ -11,20 +11,24 @@ interface DrawToolsProps {
 export const DrawTools = ({ map }: DrawToolsProps) => {
   useEffect(() => {
     if (!map) {
-      console.warn("🛑 mapRef.current ist noch null – DrawTools überspringt.");
+      console.warn("🛑 Map is null in DrawTools - skipping initialization");
       return;
     }
 
+    // Verify map container exists in DOM
     if (!map.getContainer() || !document.body.contains(map.getContainer())) {
-      console.warn("❌ Map container nicht im DOM gefunden. Abbruch.");
+      console.warn("❌ Map container not found in DOM. Aborting DrawTools initialization.");
       return;
     }
 
-    console.log("✅ DrawTools aktiv mit Map:", map);
+    console.log("✅ DrawTools initializing with Map:", map);
 
+    // Create feature group for drawn items
     const drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
+    console.log("✅ Added drawnItems layer to map");
 
+    // Configure draw control with specific options
     const drawControl = new L.Control.Draw({
       position: "topleft",
       draw: {
@@ -50,26 +54,25 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
       },
     });
 
-    // SetTimeout als Fallback bei Control-Zugriffsproblemen
-    setTimeout(() => {
-      map.whenReady(() => {
-        try {
-          map.addControl(drawControl);
-          console.log("✅ Draw control erfolgreich hinzugefügt.");
-        } catch (error) {
-          console.error("❌ Fehler beim Hinzufügen des drawControl:", error);
-        }
-      });
-    }, 500); // Delay um sicherzustellen, dass die Map bereit ist
+    // Add control with delayed execution and proper error handling
+    try {
+      console.log("➡️ Adding draw control to map...");
+      map.addControl(drawControl);
+      console.log("✅ Draw control successfully added to map");
+    } catch (error) {
+      console.error("❌ Error adding drawControl:", error);
+    }
 
+    // Handle draw events
     map.on(L.Draw.Event.CREATED, (e: L.DrawEvents.Created) => {
+      console.log("✏️ Draw created event fired");
       const layer = e.layer;
       drawnItems.addLayer(layer);
 
       if ("getLatLngs" in layer) {
         const latlngs = (layer as L.Polygon).getLatLngs()[0] as L.LatLng[];
         const area = L.GeometryUtil.geodesicArea(latlngs);
-        // Formatiere die Fläche richtig: m² für kleine Flächen, km² für große
+        // Format area properly: m² for small areas, km² for large ones
         const areaValue = area < 1_000_000 
           ? `${Math.round(area)} m²` 
           : `${(area / 1_000_000).toFixed(2)} km²`;
@@ -81,21 +84,24 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
             className: "area-label",
             html: `<div class="area-value">${areaValue}</div>`,
           }),
-          interactive: false, // Verhindert dass der Marker als "mark" behandelt wird
+          interactive: false, // Prevents the marker from being treated as "mark"
         });
 
         map.addLayer(label);
+        console.log("✅ Added area label:", areaValue);
       }
     });
 
     return () => {
+      console.log("🧹 Cleaning up DrawTools...");
       try {
         if (map && map.getContainer() && document.body.contains(map.getContainer())) {
           map.removeLayer(drawnItems);
           map.removeControl(drawControl);
+          console.log("✅ DrawTools cleanup complete");
         }
       } catch (err) {
-        console.error("🧹 Fehler beim Entfernen von DrawTools:", err);
+        console.error("❌ Error during DrawTools cleanup:", err);
       }
     };
   }, [map]);

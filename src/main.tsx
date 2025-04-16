@@ -4,9 +4,13 @@ import App from './App.tsx'
 import './index.css'
 import './leaflet.css'
 import "leaflet/dist/leaflet.css";
-import "leaflet-draw/dist/leaflet.draw.css"; // Ensure Leaflet Draw CSS is imported
-// Import leaflet-geometryutil as a module instead of direct file path
+import "leaflet-draw/dist/leaflet.draw.css"; 
+
+// Import leaflet-geometryutil as a module
 import "leaflet-geometryutil";
 
-createRoot(document.getElementById("root")!).render(<App />);
-
+// Add a small delay before mounting to ensure CSS is loaded
+setTimeout(() => {
+  console.log("🚀 Starting application with all Leaflet resources");
+  createRoot(document.getElementById("root")!).render(<App />);
+}, 100);

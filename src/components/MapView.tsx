@@ -1,6 +1,8 @@
 
 import { useEffect } from "react";
 import L from "leaflet";
+import "leaflet-draw";
+import "leaflet-geometryutil";
 
 interface MapViewProps {
   mapRef: React.MutableRefObject<L.Map | null>;
@@ -9,6 +11,16 @@ interface MapViewProps {
 
 const MapView = ({ mapRef, onMapReady }: MapViewProps) => {
   useEffect(() => {
+    console.log("MapView initializing...");
+    
+    // Verify Leaflet resources are loaded
+    if (!L.Draw) {
+      console.error("❌ L.Draw is not available! Check imports.");
+    } else {
+      console.log("✅ L.Draw is available");
+    }
+    
+    // Initialize map with options
     const map = L.map("leaflet-map", {
       center: [51.5, 7.0],
       zoom: 8,
@@ -17,7 +29,9 @@ const MapView = ({ mapRef, onMapReady }: MapViewProps) => {
       zoomControl: true,
     });
 
+    // Store map reference
     mapRef.current = map;
+    console.log("✅ Map instance created and stored in mapRef");
 
     const MAPBOX_TOKEN = "pk.eyJ1Ijoicm9vZmVyZ2FtaW5nIiwiYSI6ImNtOHduem92dTE0dHAya3NldWRuMHVlN2UifQ.p1DH0hDh_k_1fp9HIXoVKQ";
 
@@ -33,16 +47,23 @@ const MapView = ({ mapRef, onMapReady }: MapViewProps) => {
     );
 
     satelliteLayer.addTo(map);
+    console.log("✅ Satellite layer added to map");
 
-    // Notify when map is ready
+    // Force rerender and notify when map is ready
     map.whenReady(() => {
-      console.log("Map is ready and loaded!");
+      console.log("✅ Map is fully ready and loaded!");
+      map.invalidateSize();
+      
       if (onMapReady) {
-        onMapReady();
+        setTimeout(() => {
+          console.log("Executing onMapReady callback");
+          onMapReady();
+        }, 200); // Short delay to ensure DOM is rendered
       }
     });
 
     return () => {
+      console.log("🧹 Cleaning up MapView...");
       map.remove();
     };
   }, [mapRef, onMapReady]);
