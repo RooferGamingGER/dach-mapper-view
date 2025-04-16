@@ -7,37 +7,40 @@ interface MapViewProps {
 
 const MapView = ({ mapRef }: MapViewProps) => {
   useEffect(() => {
-    // Leaflet-Karte initialisieren
+    // Initialisiere Leaflet-Karte
     const map = L.map("leaflet-map", {
       center: [51.5, 7.0],
       zoom: 8,
       minZoom: 6,
-      maxZoom: 21,
-      zoomControl: false,
+      maxZoom: 22, // bis Zoom 19 sind Bilder verfügbar
+      zoomControl: true,
     });
 
-    // Referenz speichern
     mapRef.current = map;
 
-    console.log("Leaflet Map wurde erstellt und in mapRef gespeichert:", map);
+    console.log("Map initialisiert und gespeichert", map);
 
-    // WMTS-Konfiguration für Geoportal NRW (Digitale Orthophotos RGB)
-    const wmtsUrl =
-      "https://www.wmts.nrw.de/geobasis/wmts_nw_dop/nw_dop_rgb/default/WebMercatorQuad/{z}/{y}/{x}.jpeg";
+    // Korrekte WMTS-URL (Achtung: KEIN {x}/{y}/{z}-Format!)
+    const wmtsLayer = L.tileLayer(
+      "https://www.wmts.nrw.de/geobasis/wmts_nw_dop?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0" +
+        "&LAYER=nw_dop_rgb" +
+        "&STYLE=default" +
+        "&TILEMATRIXSET=WebMercatorQuad" +
+        "&TILEMATRIX={z}" +
+        "&TILEROW={y}" +
+        "&TILECOL={x}" +
+        "&FORMAT=image/jpeg",
+      {
+        tileSize: 256,
+        maxZoom: 19,
+        attribution:
+          '© Land NRW (2025) | <a href="https://www.bezreg-koeln.nrw.de" target="_blank">GeoBasis NRW</a>',
+        crossOrigin: true,
+      }
+    );
 
-    const wmtsOptions = {
-      tileSize: 256,
-      maxZoom: 22,
-      attribution:
-        '© Land NRW (2025) | <a href="https://www.bezreg-koeln.nrw.de" target="_blank">GeoBasis NRW</a>',
-      crossOrigin: true,
-    };
+    wmtsLayer.addTo(map);
 
-    // Orthofoto-Layer hinzufügen
-    const orthofotoLayer = L.tileLayer(wmtsUrl, wmtsOptions);
-    orthofotoLayer.addTo(map);
-
-    // Cleanup
     return () => {
       map.remove();
     };
