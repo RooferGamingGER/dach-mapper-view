@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import L from "leaflet";
-import "leaflet-draw"; // importiert Zeichen-Plugin
-import "leaflet-draw/dist/leaflet.draw.css";
+import "leaflet-draw";
 import "leaflet-geometryutil";
 
 interface DrawToolsProps {
@@ -17,19 +16,18 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
 
     const drawControl = new L.Control.Draw({
       draw: {
-        polyline: false,
-        rectangle: false,
-        circle: false,
-        marker: false,
-        circlemarker: false,
         polygon: {
           allowIntersection: false,
           showArea: true,
           shapeOptions: {
-            color: "#ff7800",
-            weight: 2,
+            color: "#ff0000",
           },
         },
+        marker: false,
+        polyline: false,
+        rectangle: false,
+        circle: false,
+        circlemarker: false,
       },
       edit: {
         featureGroup: drawnItems,
@@ -41,25 +39,22 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
 
     map.on(L.Draw.Event.CREATED, (e: any) => {
       const layer = e.layer;
+      drawnItems.addLayer(layer);
+
       const latlngs = layer.getLatLngs()[0];
-
-      // Fläche berechnen
       const area = L.GeometryUtil.geodesicArea(latlngs);
-      const readableArea = (area / 1000000).toFixed(2); // m²
+      const readable = `${(area / 1_000_000).toFixed(2)} m²`;
 
-      // Zentroid berechnen
       const center = layer.getBounds().getCenter();
 
-      // Text-Label hinzufügen
       const label = L.marker(center, {
         icon: L.divIcon({
           className: "leaflet-tooltip",
-          html: `<strong>${readableArea} m²</strong>`,
+          html: `<strong>${readable}</strong>`,
         }),
       });
 
-      label.addTo(map);
-      drawnItems.addLayer(layer);
+      map.addLayer(label);
     });
   }, [map]);
 
