@@ -2,12 +2,12 @@ import { useRef, useEffect, useState } from "react";
 import { ZoomIn, ZoomOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MapView from "@/components/MapView";
-import L from "leaflet";
 import { DrawTools } from "@/components/DrawTools";
+import L from "leaflet";
 
 interface MapProps {
   activeTool?: string;
-  mapRef: React.MutableRefObject<L.Map | null>; // neu
+  mapRef: React.MutableRefObject<L.Map | null>;
 }
 
 export function Map({ activeTool, mapRef }: MapProps) {
@@ -34,6 +34,7 @@ export function Map({ activeTool, mapRef }: MapProps) {
   return (
     <div className="relative w-full h-full flex-1">
       <MapView mapRef={mapRef} />
+      <DrawTools map={mapRef.current} />
 
       <div className="absolute bottom-4 right-4 flex flex-col gap-2 z-[1000]">
         <Button variant="secondary" size="icon" onClick={handleZoomIn}>
