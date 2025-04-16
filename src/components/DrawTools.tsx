@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import L from "leaflet";
 import "leaflet-draw"; // importiert Zeichen-Plugin
 import "leaflet-draw/dist/leaflet.draw.css";
+import "leaflet-geometryutil";
 
 interface DrawToolsProps {
   map: L.Map | null;
