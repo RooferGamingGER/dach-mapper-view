@@ -37,7 +37,10 @@ export function Map({ activeTool, mapRef }: MapProps) {
     <div className="relative w-full h-full flex-1">
       <MapView 
         mapRef={mapRef} 
-        onMapReady={() => setMapReady(true)}
+        onMapReady={() => {
+          console.log("Map ist bereit - onMapReady ausgelöst");
+          setMapReady(true);
+        }}
       />
 
       <div className="absolute bottom-4 right-4 flex flex-col gap-2 z-[1000]">

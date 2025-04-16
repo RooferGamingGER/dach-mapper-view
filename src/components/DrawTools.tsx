@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import L from "leaflet";
 import "leaflet-draw";
@@ -32,6 +33,9 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
           showArea: true,
           shapeOptions: {
             color: "#ff0000",
+            weight: 3,
+            opacity: 0.8,
+            fillOpacity: 0.3,
           },
         },
         marker: false,
@@ -48,7 +52,7 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
 
     // SetTimeout als Fallback bei Control-Zugriffsproblemen
     setTimeout(() => {
-     map.whenReady(() => {
+      map.whenReady(() => {
         try {
           map.addControl(drawControl);
           console.log("✅ Draw control erfolgreich hinzugefügt.");
@@ -56,6 +60,7 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
           console.error("❌ Fehler beim Hinzufügen des drawControl:", error);
         }
       });
+    }, 500); // Delay um sicherzustellen, dass die Map bereit ist
 
     map.on(L.Draw.Event.CREATED, (e: L.DrawEvents.Created) => {
       const layer = e.layer;
@@ -64,14 +69,19 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
       if ("getLatLngs" in layer) {
         const latlngs = (layer as L.Polygon).getLatLngs()[0] as L.LatLng[];
         const area = L.GeometryUtil.geodesicArea(latlngs);
-        const readable = `${(area / 1_000_000).toFixed(2)} m²`;
+        // Formatiere die Fläche richtig: m² für kleine Flächen, km² für große
+        const areaValue = area < 1_000_000 
+          ? `${Math.round(area)} m²` 
+          : `${(area / 1_000_000).toFixed(2)} km²`;
+          
         const center = (layer as L.Polygon).getBounds().getCenter();
 
         const label = L.marker(center, {
           icon: L.divIcon({
             className: "area-label",
-            html: `<strong>${readable}</strong>`,
+            html: `<div class="area-value">${areaValue}</div>`,
           }),
+          interactive: false, // Verhindert dass der Marker als "mark" behandelt wird
         });
 
         map.addLayer(label);
