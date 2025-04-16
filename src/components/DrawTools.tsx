@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import L from "leaflet";
-import "leaflet-draw"; // Muss vor der Verwendung geladen sein
+import "leaflet-draw";
 import "leaflet-geometryutil";
 
 interface DrawToolsProps {
@@ -14,8 +14,13 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
       return;
     }
 
-    // Zeichentools erst aktivieren, wenn die Karte wirklich bereit ist
-    const init = () => {
+    map.whenReady(() => {
+      // Kontrolliere ob die internen Leaflet-Corner-Container existieren
+      if (!(map as any)._controlCorners) {
+        console.warn("🛑 map._controlCorners nicht initialisiert, Zeichentools abgebrochen.");
+        return;
+      }
+
       console.log("✅ DrawTools aktiv mit Map:", map);
 
       const drawnItems = new L.FeatureGroup();
@@ -81,11 +86,6 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
           console.warn("❗ Fehler beim Entfernen von DrawTools:", err);
         }
       };
-    };
-
-    // Verzögertes Initialisieren nach whenReady
-    map.whenReady(() => {
-      setTimeout(init, 300);
     });
   }, [map]);
 
