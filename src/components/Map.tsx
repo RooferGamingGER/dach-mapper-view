@@ -1,66 +1,56 @@
-
-import { useEffect, useRef, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { ZoomIn, ZoomOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import MapView from "@/components/MapView"; // ← Wichtig
 
 interface MapProps {
   activeTool?: string;
 }
 
 export function Map({ activeTool }: MapProps) {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [zoom, setZoom] = useState(1);
-  
-  const increaseZoom = () => {
-    setZoom(Math.min(zoom + 0.2, 2));
+  const [zoomLevel, setZoomLevel] = useState(8);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+
+  // Zoom-Control mit Leaflet
+  const handleZoomIn = () => {
+    const map = mapInstanceRef.current;
+    if (map) {
+      map.zoomIn();
+      setZoomLevel(map.getZoom());
+    }
   };
-  
-  const decreaseZoom = () => {
-    setZoom(Math.max(zoom - 0.2, 0.5));
+
+  const handleZoomOut = () => {
+    const map = mapInstanceRef.current;
+    if (map) {
+      map.zoomOut();
+      setZoomLevel(map.getZoom());
+    }
   };
-  
+
   useEffect(() => {
-    // This would be where we'd initialize a real map library
-    console.log("Map initialized with tool:", activeTool);
+    console.log("Map tool selected:", activeTool);
   }, [activeTool]);
-  
+
   return (
-    <div className="relative w-full h-full flex-1 bg-gray-100 overflow-hidden">
-      {/* Mock map content - in a real app this would be a mapping library */}
-      <div 
-        ref={mapRef} 
-        className="w-full h-full bg-[url('https://geoportal.nrw/application/geoportal/vendor/mapbender/src/Mapbender/CoreBundle/Resources/public/mapbender.element.map.js')] bg-cover bg-center"
-        style={{ 
-          backgroundImage: "url('https://img.topky.sk/900px/1674645.jpg/google-maps-mapa.jpg')",
-          transform: `scale(${zoom})`,
-          transition: "transform 0.3s ease"
-        }}
-      />
-      
-      {/* Zoom controls */}
-      <div className="absolute bottom-4 right-4 flex flex-col gap-2">
-        <Button
-          variant="secondary"
-          size="icon"
-          className="bg-white shadow-md hover:bg-gray-100"
-          onClick={increaseZoom}
-        >
+    <div className="relative w-full h-full flex-1">
+      {/* Interaktive Karte */}
+      <MapView mapRef={mapInstanceRef} />
+
+      {/* Zoom Buttons */}
+      <div className="absolute bottom-4 right-4 flex flex-col gap-2 z-[1000]">
+        <Button variant="secondary" size="icon" onClick={handleZoomIn}>
           <ZoomIn size={20} />
           <span className="sr-only">Zoom In</span>
         </Button>
-        <Button
-          variant="secondary"
-          size="icon"
-          className="bg-white shadow-md hover:bg-gray-100"
-          onClick={decreaseZoom}
-        >
+        <Button variant="secondary" size="icon" onClick={handleZoomOut}>
           <ZoomOut size={20} />
           <span className="sr-only">Zoom Out</span>
         </Button>
       </div>
-      
-      {/* Info display */}
-      <div className="absolute top-4 right-4 bg-white/90 rounded p-2 text-sm">
+
+      {/* Tool-Anzeige */}
+      <div className="absolute top-4 right-4 bg-white/90 rounded p-2 text-sm shadow z-[1000]">
         <div>
           <strong>Aktives Werkzeug:</strong> {activeTool || "Keins"}
         </div>
