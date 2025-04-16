@@ -3,7 +3,7 @@ import { Search, MapPin, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-const MAPBOX_TOKEN = "<DEIN_MAPBOX_API_KEY>"; // 👈 HIER deinen echten Token einsetzen
+const MAPBOX_TOKEN = "pk.eyJ1Ijoicm9vZmVyZ2FtaW5nIiwiYSI6ImNtOHduem92dTE0dHAya3NldWRuMHVlN2UifQ.p1DH0hDh_k_1fp9HIXoVKQ"; // 👈 HIER deinen echten Token einsetzen
 
 interface AddressSearchProps {
   onSelect: (label: string, coords: [number, number]) => void;
