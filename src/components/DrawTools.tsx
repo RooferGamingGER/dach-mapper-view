@@ -49,6 +49,10 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
       });
 
       try {
+                if (!map._controlCorners) {
+          console.warn("🛠️ map._controlCorners fehlt — initialisiere manuell...");
+          (map as any).initControlPos?.(); // 👉 zur Sicherheit optional aufrufen
+        }
         map.addControl(drawControl);
         console.log("✅ Zeichentools erfolgreich hinzugefügt.");
       } catch (error) {
