@@ -20,29 +20,20 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
       return;
     }
 
-    // ⏳ Warten auf Leaflet-Initialisierung
-    map.whenReady(() => {
-      // Sicherstellen, dass Leaflet intern bereit ist
-      setTimeout(() => {
-        if (!map._controlCorners) {
-          console.warn("🛑 map._controlCorners nicht initialisiert, Zeichentools abgebrochen.");
-          return;
-        }
-
-        console.log("✅ Zeichentools initialisiert.");
+    const enableDrawTools = () => {
+      try {
+        console.log("🔍 Initializing DrawTools...");
 
         const drawnItems = new L.FeatureGroup();
         map.addLayer(drawnItems);
 
-        const drawControl = new L.Control.Draw({
-          position: "topleft",
+        const drawControl = new (L.Control as any).Draw({
+          position: "topright", // <== Change position here if needed
           draw: {
             polygon: {
               allowIntersection: false,
               showArea: true,
-              shapeOptions: {
-                color: "#ff0000",
-              },
+              shapeOptions: { color: "#ff0000" },
             },
             marker: false,
             polyline: false,
@@ -56,8 +47,13 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
           },
         });
 
+        if (!map._controlCorners) {
+          console.warn("🛑 map._controlCorners nicht verfügbar, DrawControl nicht möglich.");
+          return;
+        }
+
         map.addControl(drawControl);
-        console.log("✅ Draw Control zur Karte hinzugefügt.");
+        console.log("✅ Draw control added to map successfully");
 
         map.on(L.Draw.Event.CREATED, (e: L.DrawEvents.Created) => {
           const layer = e.layer;
@@ -81,17 +77,26 @@ export const DrawTools = ({ map }: DrawToolsProps) => {
           }
         });
 
-        // Aufräumen bei Komponentenwechsel
         return () => {
-          try {
-            map.removeLayer(drawnItems);
-            map.removeControl(drawControl);
-          } catch (err) {
-            console.warn("⚠️ Fehler beim Entfernen der Zeichenwerkzeuge:", err);
-          }
+          console.log("🧹 Cleanup DrawTools");
+          map.removeLayer(drawnItems);
+          map.removeControl(drawControl);
         };
-      }, 500); // Wartezeit, damit DOM wirklich bereit ist
-    });
+      } catch (err) {
+        console.error("❌ Fehler beim Initialisieren der DrawTools:", err);
+      }
+    };
+
+    // Einmal warten, um sicherzugehen, dass alles ready ist
+    const timeout = setTimeout(() => {
+      if (map._controlCorners) {
+        enableDrawTools();
+      } else {
+        console.warn("🛑 map._controlCorners fehlt trotz Delay. Abbruch.");
+      }
+    }, 500);
+
+    return () => clearTimeout(timeout);
   }, [map]);
 
   return null;
